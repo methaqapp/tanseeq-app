@@ -1,25 +1,21 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Tajawal } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+// تهيئة خط تجوّل مع جميع الأوزان التي نحتاجها
+const tajawal = Tajawal({
+  subsets: ["arabic"],
+  weight: ["300", "400", "500", "700", "800"],
+  display: "swap", // لضمان سرعة ظهور النص
 });
 
 export const metadata: Metadata = {
-  title: "منصة تنسيق | للزواج الجاد",
-  description: "منصة التوافق والزواج الجاد داخل الخليج بسرية واحترافية",
-  manifest: "/manifest.json",
+  title: "ميثاق | منصة التوافق والزواج الجاد",
+  description: "منصة موثوقة للتوافق والزواج الجاد داخل الخليج، بإشراف ومتابعة بشرية للحفاظ على الجدية والخصوصية.",
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0f172a",
+  themeColor: "#0f172a", // لون كحلي ليتناسب مع الهوية في متصفحات الجوال
 };
 
 export default function RootLayout({
@@ -28,11 +24,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="ar" dir="rtl">
+      {/* تطبيق الخط على كامل جسم الموقع مع تحسين نعومة الخطوط (antialiased) */}
+      <body className={`${tajawal.className} antialiased bg-[#f8fafc] text-slate-900`}>
+        {children}
+      </body>
     </html>
   );
 }
