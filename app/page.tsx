@@ -441,7 +441,22 @@ export default function Home() {
                           {Object.keys(gulfCountries).map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                       </div>
-                    </div>
+                    <div>
+  <label className="block mb-2 text-sm font-bold text-[#0f172a]">المدينة / المنطقة</label>
+  <select 
+    name="region" 
+    value={formData.region} 
+    onChange={handleChange} 
+    required 
+    disabled={!formData.country}
+    className="w-full border border-slate-200 rounded-xl p-3 bg-[#f8fafc] focus:bg-white focus:border-[#c29b57] outline-none transition text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+  >
+    <option value="">اختر مدينتك أو منطقتك</option>
+    {formData.country && gulfCountries[formData.country as keyof typeof gulfCountries]?.map(city => (
+      <option key={city} value={city}>{city}</option>
+    ))}
+  </select>
+</div>                        </div>
                   )}
 
                   {step === 2 && (
@@ -486,6 +501,32 @@ export default function Home() {
                         <label className="block mb-2 text-sm font-bold text-[#0f172a]">الوظيفة</label>
                         <input type="text" name="job" value={formData.job} onChange={handleChange} required placeholder="اختر وظيفتك" className="w-full border border-slate-200 rounded-xl p-3 bg-[#f8fafc] outline-none focus:border-[#c29b57]" />
                       </div>
+                        <div>
+  <label className="block mb-2 text-sm font-bold text-[#0f172a]">الحالة المادية</label>
+  <select name="wealth_level" value={formData.wealth_level} onChange={handleChange} required className="w-full border border-slate-200 rounded-xl p-3 bg-[#f8fafc] outline-none focus:border-[#c29b57]">
+    <option value="">اختر حالتك المادية</option>
+    <option>بسيط</option><option>متوسط</option><option>جيد</option><option>ممتاز</option>
+  </select>
+</div>
+
+<div>
+  <label className="block mb-2 text-sm font-bold text-[#0f172a]">الرغبة في الإنجاب</label>
+  <select name="want_children" value={formData.want_children} onChange={handleChange} required className="w-full border border-slate-200 rounded-xl p-3 bg-[#f8fafc] outline-none focus:border-[#c29b57]">
+    <option value="">اختر رغبتك</option>
+    <option>نعم</option><option>لا</option><option>يناقش لاحقاً</option>
+  </select>
+</div>
+
+{/* نوع السكن يظهر عادة في استمارة الرجال فقط بناءً على التصميم */}
+{formType === "men" && (
+  <div>
+    <label className="block mb-2 text-sm font-bold text-[#0f172a]">نوع السكن</label>
+    <select name="housing_type" value={formData.housing_type} onChange={handleChange} required className="w-full border border-slate-200 rounded-xl p-3 bg-[#f8fafc] outline-none focus:border-[#c29b57]">
+      <option value="">اختر نوع السكن</option>
+      <option>سكن مستقل</option><option>مع العائلة</option><option>أخرى</option>
+    </select>
+  </div>
+)}
                       <div className="flex gap-4">
                         <div className="w-1/2">
                           <label className="block mb-2 text-sm font-bold text-[#0f172a]">الطول (سم)</label>
