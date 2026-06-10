@@ -25,14 +25,13 @@ const FemaleAvatar = ({ className }: { className?: string }) => (
 );
 
 const gulfCountries = {
-  "السعودية": ["الرياض", "مكة المكرمة", "المدينة المنورة", "المنطقة الشرقية", "القصيم", "عسير", "تبوك", "حائل", "جازان", "نجران", "الجوف", "الحدود الشمالية", "الباحة"],
+  "السعودية": ["الرياض", "جدة", "مكة المكرمة", "المدينة المنورة", "الدمام", "الخبر", "الظهران", "الطائف", "القصيم", "أبها", "خميس مشيط", "تبوك", "حائل", "جازان", "نجران", "الباحة", "الجبيل", "الأحساء", "ينبع"],
   "الإمارات": ["أبوظبي", "دبي", "الشارقة", "عجمان", "رأس الخيمة", "الفجيرة", "أم القيوين"],
   "الكويت": ["العاصمة", "حولي", "الفروانية", "مبارك الكبير", "الأحمدي", "الجهراء"],
   "قطر": ["الدوحة", "الريان", "الوكرة", "الخور", "الشمال"],
   "البحرين": ["العاصمة", "المحرق", "الشمالية", "الجنوبية"],
   "عمان": ["مسقط", "ظفار", "مسندم", "البريمي", "الداخلية", "شمال الباطنة", "جنوب الباطنة"]
 };
-
 const getDialCode = (countryName: string) => {
   const codes: Record<string, string> = { 
     "السعودية": "+966", "الإمارات": "+971", "الكويت": "+965", 
@@ -46,9 +45,9 @@ const initialFormState = {
   social_status: "", has_children: "", children_count: "", education_level: "",
   job: "", wealth_level: "", housing_type: "", height: "", weight: "",
   smoking: "", marriage_type: "", want_children: "", health_status: "",
-  bio: "", requirements: "", notes: "", whatsapp_number: ""
+  bio: "", requirements: "", notes: "", whatsapp_number: "",
+  origin: "", tribe_name: "" // الحقول الجديدة
 };
-
 export default function Home() {
   const [formType, setFormType] = useState<"men" | "women" | null>(null);
   const [step, setStep] = useState(1);
@@ -132,6 +131,7 @@ export default function Home() {
     if (finalPhoneNumber.startsWith('0')) {
       finalPhoneNumber = finalPhoneNumber.substring(1); 
     }
+
     const internationalPhone = `${getDialCode(formData.country)}${finalPhoneNumber}`;
 
     const submitData = {
@@ -147,6 +147,8 @@ export default function Home() {
       has_children: finalHasChildren,
       children_count: finalChildrenCount,
       housing_type: formType === "men" ? formData.housing_type : null,
+      origin: formData.origin,
+      tribe_name: formData.origin === "قبلي" ? formData.tribe_name : null,
     };
 
     try {
@@ -190,15 +192,23 @@ export default function Home() {
             سيتم مراجعة الطلب من الإدارة قبل الاعتماد والتواصل معك عند الحاجة.
           </p>
           
-          <div className="flex flex-col gap-3">
-            <button onClick={() => { localStorage.clear(); window.location.reload(); }} className="w-full bg-[#0f172a] text-white px-8 py-4 rounded-xl hover:bg-[#1e293b] transition font-bold flex justify-center items-center gap-2">
+         <div className="flex flex-col gap-3 mt-6">
+            <button 
+              onClick={() => {
+                navigator.clipboard.writeText(submittedId);
+                alert("تم نسخ رقم الطلب: " + submittedId);
+              }} 
+              className="w-full bg-[#c29b57] text-white px-8 py-4 rounded-xl hover:bg-[#a8864a] transition font-bold flex justify-center items-center gap-2"
+            >
+               نسخ رقم الطلب
+            </button>
+            <a href={`https://wa.me/966527585083?text=السلام عليكم، مهتم بالطلب رقم ${submittedId} وأرغب بمعرفة المزيد من التفاصيل.`} target="_blank" rel="noopener noreferrer" className="w-full bg-[#0f172a] text-white px-8 py-4 rounded-xl hover:bg-[#1e293b] transition font-bold flex justify-center items-center gap-2">
+               التواصل عبر واتساب
+            </a>
+            <button onClick={() => { localStorage.clear(); window.location.reload(); }} className="w-full bg-white text-[#0f172a] border border-slate-200 px-8 py-4 rounded-xl hover:bg-slate-50 transition font-bold flex justify-center items-center gap-2">
                العودة للرئيسية
             </button>
-            <a href="https://wa.me/966527585083" target="_blank" rel="noopener noreferrer" className="w-full bg-white text-[#0f172a] border border-slate-200 px-8 py-4 rounded-xl hover:bg-slate-50 transition font-bold flex justify-center items-center gap-2">
-               التواصل مع الإدارة
-            </a>
-          </div>
-        </div>
+          </div>        </div>
       </div>
     );
   }
@@ -422,15 +432,19 @@ export default function Home() {
                         <h2 className="text-xl font-bold text-[#0f172a]">المعلومات الأساسية</h2>
                         <User className="w-12 h-12 text-[#c29b57] mx-auto mt-4 opacity-80" />
                       </div>
-                      <div>
-                        <label className="block mb-2 text-sm font-bold text-[#0f172a]">الاسم الأول أو المستعار</label>
-                        <input type="text" name="first_name" value={formData.first_name} onChange={handleChange} required placeholder="اكتب اسمك..." className="w-full border border-slate-200 rounded-xl p-3 bg-[#f8fafc] focus:bg-white focus:border-[#c29b57] outline-none transition" />
+                     <div>
+                        <label className="block mb-2 text-sm font-bold text-[#0f172a]">الاسم الأول أو المستعار <span className="text-slate-400 font-normal">(اختياري)</span></label>
+                        <input type="text" name="first_name" value={formData.first_name} onChange={handleChange} placeholder="مثال: أبو محمد، أم خالد..." className="w-full border border-slate-200 rounded-xl p-3 bg-[#f8fafc] focus:bg-white focus:border-[#c29b57] outline-none transition" />
                       </div>
                       <div>
                         <label className="block mb-2 text-sm font-bold text-[#0f172a]">العمر</label>
-                        <input type="number" name="age" value={formData.age} onChange={handleChange} min="18" max="99" required placeholder="اختر عمرك" className="w-full border border-slate-200 rounded-xl p-3 bg-[#f8fafc] focus:bg-white focus:border-[#c29b57] outline-none transition" />
-                      </div>
-                      <div>
+                        <select name="age" value={formData.age} onChange={handleChange} required className="w-full border border-slate-200 rounded-xl p-3 bg-[#f8fafc] focus:bg-white focus:border-[#c29b57] outline-none transition">
+                          <option value="">اختر عمرك</option>
+                          {Array.from({ length: 53 }, (_, i) => i + 18).map(age => (
+                            <option key={age} value={age}>{age}</option>
+                          ))}
+                        </select>
+                      </div>                      <div>
                         <label className="block mb-2 text-sm font-bold text-[#0f172a]">الجنسية</label>
                         <input type="text" name="nationality" value={formData.nationality} onChange={handleChange} required placeholder="اكتب جنسيتك" className="w-full border border-slate-200 rounded-xl p-3 bg-[#f8fafc] focus:bg-white focus:border-[#c29b57] outline-none transition" />
                       </div>
@@ -527,6 +541,15 @@ export default function Home() {
     </select>
   </div>
 )}
+                        <div>
+                        <label className="block mb-2 text-sm font-bold text-[#0f172a]">التدخين</label>
+                        <select name="smoking" value={formData.smoking} onChange={handleChange} required className="w-full border border-slate-200 rounded-xl p-3 bg-[#f8fafc] outline-none focus:border-[#c29b57]">
+                          <option value="">اختر موقفك من التدخين</option>
+                          <option>لا أدخن</option>
+                          <option>أدخن</option>
+                          <option>شيشة / إلكتروني</option>
+                        </select>
+                      </div>
                       <div className="flex gap-4">
                         <div className="w-1/2">
                           <label className="block mb-2 text-sm font-bold text-[#0f172a]">الطول (سم)</label>
@@ -546,6 +569,29 @@ export default function Home() {
                         <p className="text-slate-500 text-xs mb-1">الخطوة 3 من 5</p>
                         <h2 className="text-xl font-bold text-[#0f172a]">نبذة ومواصفات الطرف الآخر</h2>
                       </div>
+                        <div>
+                        <label className="block mb-2 text-sm font-bold text-[#0f172a]">نوع الزواج المطلوب</label>
+                        <select name="marriage_type" value={formData.marriage_type} onChange={handleChange} required className="w-full border border-slate-200 rounded-xl p-3 bg-[#f8fafc] outline-none focus:border-[#c29b57]">
+                          <option value="">اختر نوع الزواج</option>
+                          <option>معلن</option><option>مسيار</option><option>لا يوجد تفضيل</option>
+                        </select>
+                      </div>
+                      
+                      <div className="space-y-5 border-r-2 border-[#c29b57] pr-4 bg-yellow-50/30 p-4 rounded-xl">
+                        <div>
+                          <label className="block mb-2 text-sm font-bold text-[#0f172a]">الأصل</label>
+                          <select name="origin" value={formData.origin} onChange={handleChange} required className="w-full border border-slate-200 rounded-xl p-3 bg-white outline-none focus:border-[#c29b57]">
+                            <option value="">اختر...</option>
+                            <option>قبلي</option><option>غير قبلي</option><option>لا يهم</option>
+                          </select>
+                        </div>
+                        {formData.origin === "قبلي" && (
+                          <div className="animate-in slide-in-from-top-2 duration-300">
+                            <label className="block mb-2 text-sm font-bold text-[#0f172a]">اسم القبيلة <span className="text-slate-400 font-normal">(اختياري)</span></label>
+                            <input type="text" name="tribe_name" value={formData.tribe_name} onChange={handleChange} placeholder="اكتب اسم القبيلة" className="w-full border border-slate-200 rounded-xl p-3 bg-white outline-none focus:border-[#c29b57]" />
+                          </div>
+                        )}
+                      </div>
                       <div>
                         <label className="block mb-2 text-sm font-bold text-[#0f172a]">نبذة عنك</label>
                         <textarea name="bio" value={formData.bio} onChange={handleChange} required rows={4} placeholder="اكتب نبذة مختصرة عنك (مثال: رجل جاد أبحث عن الاستقرار وتكوين أسرة مستقرة...)" className="w-full border border-slate-200 rounded-xl p-3 bg-[#f8fafc] outline-none focus:border-[#c29b57] resize-none" />
@@ -555,6 +601,15 @@ export default function Home() {
                         <label className="block mb-2 text-sm font-bold text-[#0f172a]">مواصفات الطرف الآخر</label>
                         <textarea name="requirements" value={formData.requirements} onChange={handleChange} required rows={4} placeholder="اكتب المواصفات التي تبحث عنها في الطرف الآخر (مثال: متدينة، متفهمة، ترغب في الاستقرار الأسري...)" className="w-full border border-slate-200 rounded-xl p-3 bg-[#f8fafc] outline-none focus:border-[#c29b57] resize-none" />
                         <div className="text-left text-xs text-slate-400 mt-1">{formData.requirements.length}/500</div>
+                      </div>
+                        <div>
+                        <label className="block mb-2 text-sm font-bold text-[#0f172a]">الحالة الصحية</label>
+                        <input type="text" name="health_status" value={formData.health_status} onChange={handleChange} required placeholder="مثال: سليم ولله الحمد، أو اذكر أي تفاصيل..." className="w-full border border-slate-200 rounded-xl p-3 bg-[#f8fafc] focus:bg-white focus:border-[#c29b57] outline-none transition" />
+                      </div>
+
+                      <div>
+                        <label className="block mb-2 text-sm font-bold text-[#0f172a]">ملاحظات إضافية <span className="text-slate-400 font-normal">(اختياري)</span></label>
+                        <textarea name="notes" value={formData.notes} onChange={handleChange} rows={2} placeholder="أي معلومات تود إيصالها للإدارة فقط..." className="w-full border border-slate-200 rounded-xl p-3 bg-[#f8fafc] outline-none focus:border-[#c29b57] resize-none" />
                       </div>
                     </div>
                   )}
