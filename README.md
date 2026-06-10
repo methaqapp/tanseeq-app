@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 💍 منصة ميثاق (Mithaq Platform)
 
-## Getting Started
+منصة إلكترونية موثوقة للتوافق والزواج الجاد داخل دول الخليج. تركز المنصة على تقديم تجربة مستخدم فاخرة، آمنة، وتعتمد على الخصوصية التامة والمراجعة اليدوية للطلبات.
 
-First, run the development server:
+---
 
+## 🚀 التقنيات المستخدمة (Tech Stack)
+
+تم بناء هذا المشروع (المرحلة الأولى - MVP) باستخدام أحدث التقنيات لضمان السرعة، الأمان، وقابلية التوسع:
+
+*   **إطار العمل:** [Next.js (App Router)](https://nextjs.org/)
+*   **مكتبة الواجهات:** [React.js](https://react.dev/)
+*   **لغة البرمجة:** TypeScript
+*   **التصميم وتنسيق الواجهات:** [Tailwind CSS](https://tailwindcss.com/)
+*   **الأيقونات:** [Lucide React](https://lucide.dev/)
+*   **قاعدة البيانات والخلفية:** [Appwrite](https://appwrite.io/) (BaaS Cloud)
+*   **الاستضافة:** [Vercel](https://vercel.com/)
+
+---
+
+## ✨ مميزات المرحلة الأولى (Phase 1 Features)
+
+*   **استمارات تسجيل ذكية:** تقسيم الاستمارة إلى 5 خطوات (Wizard) لتسهيل تجربة المستخدم وتجنب تشتيت الانتباه.
+*   **استمارات مخصصة (رجال / نساء):** عرض الحقول المناسبة بناءً على نوع التسجيل.
+*   **الحفظ التلقائي (Auto Save):** حفظ البيانات محلياً في المتصفح (`localStorage`) لمنع فقدان البيانات عند التحديث أو الخروج المؤقت.
+*   **معالجة ذكية لأرقام الجوال:** تنظيف الأرقام المنسوخة، وتوحيد التنسيق الدولي بناءً على مفتاح دولة الخليج المختارة.
+*   **تصفية ديناميكية للبيانات:** عرض المدن والمناطق بناءً على الدولة المختارة فقط.
+*   **نظام OTP مدمج:** شاشة إدخال رمز التحقق (برقم تجريبي للاختبار) وتوليد رقم طلب فريد بصيغة `MTQ-XXXXXX`.
+*   **تذكر الجهاز:** إعادة توجيه المستخدمين المسجلين مسبقاً إلى شاشة نجاح الطلب فور دخولهم للموقع لاحقاً.
+*   **تصميم متجاوب 100%:** واجهة مستخدم (UI/UX) مصممة خصيصاً لتكون مثالية على شاشات الهواتف المحمولة (Mobile-First).
+
+---
+
+## 🛠️ كيفية تشغيل المشروع محلياً (Getting Started)
+
+لتشغيل المشروع على بيئة التطوير المحلية، اتبع الخطوات التالية:
+
+### 1. تثبيت الحزم (Install Dependencies)
+قم بفتح موجّه الأوامر (Terminal) في مجلد المشروع واكتب:
 ```bash
+npm install
+# أو باستخدام yarn
+yarn install
+إعداد المتغيرات البيئية (Environment Variables)
+
+قم بإنشاء ملف .env.local في الجذر الأساسي للمشروع، وضع فيه إعدادات الربط بقاعدة بيانات Appwrite (يرجى طلب هذه المفاتيح من إدارة المشروع)
+
+NEXT_PUBLIC_APPWRITE_ENDPOINT="[https://cloud.appwrite.io/v1](https://cloud.appwrite.io/v1)"
+NEXT_PUBLIC_APPWRITE_PROJECT_ID="your_project_id_here"
+NEXT_PUBLIC_APPWRITE_DB_ID="your_database_id_here"
+NEXT_PUBLIC_APPWRITE_COLLECTION_ID="your_collection_id_here"
 npm run dev
-# or
+# أو
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+بعد ذلك، قم بفتح المتصفح على الرابط: http://localhost:3000
+هيكلة المشروع الأساسية (Project Structure)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+    /app: يحتوي على مسارات Next.js والصفحة الرئيسية (page.tsx) التي تتضمن منطق الاستمارات والواجهات.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+    /lib: يحتوي على ملف appwrite.ts الخاص بإعدادات الاتصال بقاعدة البيانات.
 
-## Learn More
+    /public: يحتوي على الخطوط، الصور، والأصول الثابتة.
+مطور المشروع
 
-To learn more about Next.js, take a look at the following resources:
+تم تطوير وبناء هذه المنصة بواسطة : السمؤال سليمان إبراهيم أحمد.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
