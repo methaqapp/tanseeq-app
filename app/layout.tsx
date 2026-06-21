@@ -1,12 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import { Tajawal } from "next/font/google";
 import "./globals.css";
-
+import BottomNav from "@/components/BottomNav";
 // تهيئة خط تجوّل مع جميع الأوزان التي نحتاجها
 const tajawal = Tajawal({
   subsets: ["arabic"],
   weight: ["300", "400", "500", "700", "800"],
   display: "swap", // لضمان سرعة ظهور النص
+  variable: "--font-tajawal"
 });
 
 export const metadata: Metadata = {
@@ -25,10 +26,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ar" dir="rtl">
-      {/* تطبيق الخط على كامل جسم الموقع مع تحسين نعومة الخطوط (antialiased) */}
-      <body className={`${tajawal.className} antialiased bg-[#f8fafc] text-slate-900`}>
-        {children}
+      <body className={`${tajawal.variable} font-sans bg-gray-50 text-[#1D2B4F] pb-16 md:pb-0`}>
+        <main className="min-h-screen  bg-white shadow-xl relative overflow-x-hidden">
+          {children}
+          <BottomNav />
+        </main>
       </body>
     </html>
-  );
-}
+  );}
