@@ -1,7 +1,7 @@
 // app/register/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { databases } from "@/lib/appwrite";
 import { ID } from "appwrite";
 import { ShieldCheck, User, Lock, CheckCircle2, ChevronRight, Phone, Clock } from "lucide-react";
@@ -28,7 +28,7 @@ const initialFormState = {
   bio: "", requirements: "", notes: "", whatsapp_number: "", origin: "", tribe_name: "" 
 };
 
-export default function RegisterPage() {
+ function RegisterContent() {
   // استخدام URL Params لمعرفة نوع التسجيل القادم من الصفحة الرئيسية
   const searchParams = useSearchParams();
   const initialType = searchParams.get("type") as "men" | "women" | null;
@@ -449,5 +449,13 @@ export default function RegisterPage() {
         </div>
       )}
     </main>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center font-bold text-[#c29b57]">جاري التحميل...</div>}>
+      <RegisterContent />
+    </Suspense>
   );
 }
