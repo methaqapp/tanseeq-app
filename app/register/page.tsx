@@ -2,11 +2,11 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { databases } from "@/lib/appwrite";
-import { ID } from "appwrite";
 import { ShieldCheck, User, Lock, CheckCircle2, ChevronRight, Phone, Clock } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { auth } from "@/lib/firebase";
+import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 
 const gulfCountries = {
   "السعودية": ["الرياض", "جدة", "مكة المكرمة", "المدينة المنورة", "الدمام", "الخبر", "الظهران", "الطائف", "القصيم", "أبها", "خميس مشيط", "تبوك", "حائل", "جازان", "نجران", "الباحة", "الجبيل", "الأحساء", "ينبع"],
@@ -29,7 +29,6 @@ const initialFormState = {
 };
 
  function RegisterContent() {
-  // استخدام URL Params لمعرفة نوع التسجيل القادم من الصفحة الرئيسية
   const searchParams = useSearchParams();
   const initialType = searchParams.get("type") as "men" | "women" | null;
 
@@ -42,9 +41,11 @@ const initialFormState = {
   const [submittedId, setSubmittedId] = useState("");
   const [otp, setOtp] = useState("");
   const [showOtpScreen, setShowOtpScreen] = useState(false);
+  
+  // 💡 إضافة State جديد لحفظ جلسة التحقق من Firebase
+  const [confirmationResult, setConfirmationResult] = useState<any>(null);
 
   useEffect(() => {
-    // استعادة البيانات لو حدث تحديث للصفحة
     const isSubmitted = localStorage.getItem("mithaq_submitted");
     const savedReqId = localStorage.getItem("mithaq_req_id");
     if (isSubmitted === "true" && savedReqId) {
@@ -84,64 +85,102 @@ const initialFormState = {
   const nextStep = () => setStep((prev) => Math.min(prev + 1, 4));
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
 
-  const handlePhoneVerification = (e: React.FormEvent) => {
+  //  إرسال الرقم إلى Firebase
+  const handlePhoneVerification = async (e: React.FormEvent) => {
     e.preventDefault();
-    setShowOtpScreen(true);
-  };
-
-  const handleFinalSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (otp !== "1234") {
-      alert("رمز التحقق غير صحيح. (الرمز التجريبي هو 1234)");
-      return;
-    }
-
     setLoading(true);
-    const randomNum = Math.floor(Math.random() * 900000) + 100000;
-    const generatedRequestId = `MTQ-${randomNum}`;
-
-    const isSingle = formData.social_status === "أعزب" || formData.social_status === "عزباء";
-    const finalHasChildren = isSingle ? "لا يوجد" : formData.has_children;
-    
-    let finalPhoneNumber = formData.whatsapp_number;
-    if (finalPhoneNumber.startsWith('0')) finalPhoneNumber = finalPhoneNumber.substring(1); 
-    const internationalPhone = `${getDialCode(formData.country)}${finalPhoneNumber}`;
-
-    const submitData = {
-      request_id: generatedRequestId,
-      type: formType,
-      source: "الموقع",
-      status: "قيد المراجعة",
-      ...formData,
-      whatsapp_number: internationalPhone, 
-      age: parseInt(formData.age, 10) || null,
-      height: parseInt(formData.height, 10) || null,
-      weight: parseInt(formData.weight, 10) || null,
-      has_children: finalHasChildren,
-      children_count: finalHasChildren === "يوجد أبناء" ? parseInt(formData.children_count, 10) : null,
-      housing_type: formType === "men" ? formData.housing_type : null,
-      tribe_name: formData.origin === "قبلي" ? formData.tribe_name : null,
-    };
 
     try {
-      await databases.createDocument(
-        process.env.NEXT_PUBLIC_APPWRITE_DB_ID as string,
-        process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID as string,
-        ID.unique(),
-        submitData
-      );
-      
-      localStorage.clear(); // مسح البيانات المؤقتة بعد النجاح
-      setSubmittedId(generatedRequestId);
-      setSuccess(true);
-    } catch (error) {
-      console.error("Error submitting:", error);
-      alert("حدث خطأ أثناء الإرسال. يرجى التأكد من اتصالك وقاعدة البيانات.");
+      let cleanPhone = formData.whatsapp_number.replace(/[^0-9]/g, '');
+      if (cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1); 
+      const internationalPhone = `${getDialCode(formData.country)}${cleanPhone}`;
+
+      if (!(window as any).recaptchaVerifier) {
+        (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+          'size': 'invisible',
+        });
+      }
+      const appVerifier = (window as any).recaptchaVerifier;
+
+      const confirmation = await signInWithPhoneNumber(auth, internationalPhone, appVerifier);
+      setConfirmationResult(confirmation);
+      setShowOtpScreen(true);
+
+    } catch (error: any) {
+      console.error("Firebase SMS Error:", error);
+      if ((window as any).recaptchaVerifier) {
+         (window as any).recaptchaVerifier.clear();
+         (window as any).recaptchaVerifier = null;
+      }
+      alert("حدث خطأ أثناء إرسال الرسالة. يرجى التأكد من الرقم أو المحاولة لاحقاً.");
     } finally {
       setLoading(false);
     }
   };
 
+  //  التحقق من الكود وحفظ البيانات
+  const handleFinalSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      // 1. التحقق من الكود المدخل مع Firebase
+      await confirmationResult.confirm(otp);
+
+      // 2. تجهيز البيانات
+      const randomNum = Math.floor(Math.random() * 900000) + 100000;
+      const generatedRequestId = `MTQ-${randomNum}`;
+
+      const isSingle = formData.social_status === "أعزب" || formData.social_status === "عزباء";
+      const finalHasChildren = isSingle ? "لا يوجد" : formData.has_children;
+      
+      let finalPhoneNumber = formData.whatsapp_number;
+      if (finalPhoneNumber.startsWith('0')) finalPhoneNumber = finalPhoneNumber.substring(1); 
+      const internationalPhone = `${getDialCode(formData.country)}${finalPhoneNumber}`;
+
+      const submitData = {
+        request_id: generatedRequestId,
+        type: formType,
+        source: "الموقع",
+        status: "قيد المراجعة",
+        ...formData,
+        whatsapp_number: internationalPhone, 
+        age: parseInt(formData.age, 10) || null,
+        height: parseInt(formData.height, 10) || null,
+        weight: parseInt(formData.weight, 10) || null,
+        has_children: finalHasChildren,
+        children_count: finalHasChildren === "يوجد أبناء" ? parseInt(formData.children_count, 10) : null,
+        housing_type: formType === "men" ? formData.housing_type : null,
+        tribe_name: formData.origin === "قبلي" ? formData.tribe_name : null,
+      };
+
+      // 3.  هنا التغيير الجذري: نرسل البيانات للـ API الآمن الخاص بنا
+      const res = await fetch('/api/create-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(submitData),
+      });
+
+      const data = await res.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || "حدث خطأ أثناء حفظ البيانات في السيرفر");
+      }
+      
+      // 4. إكمال خطوات النجاح وحفظ الجلسة
+      setSubmittedId(generatedRequestId);
+      setSuccess(true);
+
+    } catch (error: any) {
+      console.error("Error verifying OTP or submitting:", error);
+      // إظهار رسالة خطأ دقيقة للمستخدم
+      alert(error.message.includes("auth/invalid-verification-code") 
+        ? "رمز التحقق غير صحيح، يرجى المحاولة مجدداً." 
+        : "حدث خطأ غير متوقع، يرجى المحاولة لاحقاً.");
+    } finally {
+      setLoading(false);
+    }
+  };
   if (success) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] p-4" dir="rtl">
@@ -158,7 +197,6 @@ const initialFormState = {
             يرجى الاحتفاظ برقم الملف لمتابعة التحديثات مستقبلاً. سيتم مراجعة الطلب من الإدارة، وسنتواصل معك عند الحاجة عبر وسيلة التواصل الرسمية المعتمدة.
           </p>
           <div className="flex flex-col gap-3 mt-6">
-            {/* وسيلة التواصل المعتمدة */}
             <a href="https://wa.me/966527585083" target="_blank" rel="noopener noreferrer" className="w-full bg-green-500 text-white px-8 py-4 rounded-xl hover:bg-green-600 transition font-bold flex items-center justify-center gap-2">
               <Phone size={18} /> تواصل مع الدعم
             </a>
@@ -174,7 +212,6 @@ const initialFormState = {
     <main className="min-h-screen bg-[#f8fafc] font-sans flex flex-col items-center py-10 px-4" dir="rtl">
       
       {!formType ? (
-        // شاشة اختيار نوع التسجيل (في حال الدخول للرابط مباشرة)
         <div className="max-w-4xl w-full text-center mt-10">
           <h2 className="text-2xl md:text-3xl font-bold text-[#0f172a] mb-10">الرجاء اختيار نوع التسجيل للبدء</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
@@ -191,7 +228,6 @@ const initialFormState = {
           </div>
         </div>
       ) : (
-        // واجهة التسجيل المتعددة (Wizard)
         <div className="w-full max-w-2xl bg-white rounded-[2rem] shadow-sm border border-[#e2e8f0] overflow-hidden">
           <div className="px-6 pt-8 pb-4 border-b border-[#f5f3f3] relative">
             <Link href="/" className="absolute top-8 right-6 text-slate-400 hover:text-[#0f172a] transition">
@@ -393,7 +429,6 @@ const initialFormState = {
                       <Phone className="w-12 h-12 text-[#c29b57] mx-auto mt-4 opacity-80" />
                     </div>
 
-                    {/* رسالة التنبيه المطلوبة في المخطط بالحرف */}
                     <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl text-center">
                       <p className="text-xs leading-relaxed text-blue-800 font-medium">
                         رقم الجوال محفوظ بسرية تامة، ويستخدم فقط للتحقق من جدية الطلب والتواصل المتعلق بملفك، ولن يتم نشره أو مشاركته مع أي طرف آخر.
@@ -416,6 +451,9 @@ const initialFormState = {
                       <input type="checkbox" required id="privacy" className="w-4 h-4 accent-[#0f172a]" />
                       <label htmlFor="privacy" className="text-sm font-bold text-[#0f172a]">أوافق على سياسة الخصوصية</label>
                     </div>
+                    
+                    {/* 💡 حاوية ريكابتشا مخفية مهمة جداً لـ Firebase */}
+                    <div id="recaptcha-container"></div>
                   </div>
                 )}
                 <div className="flex gap-4 pt-6 mt-4">
@@ -425,8 +463,8 @@ const initialFormState = {
                     </button>
                   )}
 
-                  <button type="submit" className="flex-1 py-4 rounded-xl font-bold text-white bg-[#0f172a] hover:bg-[#1a3026] transition shadow-md">
-                    {step === 4 ? "إرسال رمز التحقق" : "التالي"}
+                  <button type="submit" disabled={loading} className="flex-1 py-4 rounded-xl font-bold text-white bg-[#0f172a] hover:bg-[#1a3026] transition shadow-md flex justify-center items-center gap-2">
+                    {loading ? "جاري الإرسال..." : (step === 4 ? "إرسال رمز التحقق" : "التالي")}
                   </button>
                 </div>
               </form>
@@ -438,7 +476,8 @@ const initialFormState = {
                   <p className="text-[#424844] text-sm">تم إرسال رمز التحقق إلى: <span className="font-bold text-[#0f172a]" dir="ltr">{getDialCode(formData.country)} {formData.whatsapp_number}</span></p>
                 </div>
                 <div className="max-w-xs mx-auto mb-8">
-                  <input type="text" value={otp} onChange={(e) => setOtp(e.target.value)} maxLength={4} placeholder="----" required className="w-full text-center text-3xl tracking-[1em] font-bold border-b-2 border-[#e2e8f0] bg-transparent py-4 outline-none focus:border-[#c29b57] transition" dir="ltr" />
+                  {/* 💡 تغيير طول الرمز إلى 6 لأن Firebase ترسل 6 أرقام */}
+                  <input type="text" value={otp} onChange={(e) => setOtp(e.target.value)} maxLength={6} placeholder="------" required className="w-full text-center text-3xl tracking-[1em] font-bold border-b-2 border-[#e2e8f0] bg-transparent py-4 outline-none focus:border-[#c29b57] transition" dir="ltr" />
                 </div>
                 <div className="flex flex-col gap-3 pt-4">
                   <button type="submit" disabled={loading} className="w-full py-4 rounded-xl font-bold text-white bg-[#0f172a] hover:bg-[#1a3026] transition shadow-md">

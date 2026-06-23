@@ -67,7 +67,7 @@ export default function AdminDashboard() {
         const user = await account.get();
         // هنا يمكنك التحقق من إيميل المدير المعتمد أو إذا كان لديه تصنيف (Labels/Roles)
         // كمثال بسيط: التحقق من إيميل معين (قم بتغييره لإيميلك الإداري)
-        if ( user.email === 'admin@methaq.com' || 'user.email === 'your-email@example.com') {
+        if ( user.email === 'admin@methaq.com' || user.email === 'your-email@example.com') {
           setIsAdminAuth(true);
         } else {
           // مستخدم عادي مسجل دخوله، يطرد للرئيسية

@@ -2,7 +2,7 @@
 
 import { Scale, Users, Heart, Sparkles, Camera, Building2, Car, Gift, ChevronLeft, MessageCircle, ChevronRight, Bell } from "lucide-react";
 import Link from "next/link";
-
+import TopHeader from "@/components/TopHeader"
 // تصميم فروع الشجر الذهبية للعنوان
 const LaurelSvg = ({ className, flipped }: { className?: string, flipped?: boolean }) => (
   <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} style={{ transform: flipped ? 'scaleX(-1)' : 'none' }}>
@@ -81,23 +81,10 @@ export default function ServicesPage() {
       <div className="pt-6 pb-12 px-4 relative">
         <div className="absolute top-0 right-0 w-64 h-64 bg-[#c29b57] rounded-full blur-[100px] opacity-10 pointer-events-none"></div>
         
-        <div className="relative z-10 max-w-5xl mx-auto flex items-center justify-between">
-          {/* تصغير الأزرار العلوية قليلاً لتبدو أرق (w-9 h-9) */}
-          <button className="w-9 h-9 border border-slate-700 rounded-full flex items-center justify-center text-white hover:bg-white/10 transition">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-          </button>
-          
-          <div className="flex flex-col items-center">
-  <h1 className="text-[28px] md:text-3xl font-black text-white tracking-tight mb-0.5">ميثاق</h1>
-  {/* تم التكبير إلى text-xs مع زيادة السماكة font-semibold */}
-  <p className="text-xs md:text-sm text-[#c29b57] font-semibold tracking-wide mt-1">منصة زواج موثوقة</p>
-</div>
-          <button className="w-9 h-9 border border-slate-700 rounded-full flex items-center justify-center text-white hover:bg-white/10 transition">
-            <Bell size={16} />
-          </button>
-        </div>
+        {/* استدعاء المكون الذكي الذي يحتوي على القائمة، الشعار، والجرس */}
+        <TopHeader />
+        
       </div>
-
       {/* 2. المحتوى الأبيض المنحني - تم تقليل padding-top (pt-8 بدلاً من pt-10) */}
       <div className="bg-[#fdfdfc] rounded-t-[2.5rem] md:rounded-t-[3rem] px-4 pt-8 pb-28 -mt-6 relative z-20 min-h-screen shadow-[0_-10px_30px_rgba(0,0,0,0.1)]">
         <div className="max-w-5xl mx-auto">
