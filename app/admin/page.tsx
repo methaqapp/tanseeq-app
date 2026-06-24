@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Loader2, Menu, Heart, Search, CheckCircle2, AlertCircle, LayoutDashboard, Users, User, Settings, X, ShieldCheck, Clock, XCircle, Bell, ChevronLeft, Save, Eye, MapPin } from "lucide-react";
 import PlaceholderAvatar from "@/components/PlaceholderAvatar";
-import { account } from "@/lib/appwrite"; // 💡 استدعاء حسابات Appwrite
+import { account } from "@/lib/appwrite"; //  استدعاء حسابات Appwrite
 
 const RingIcon = ({ size = 24, className = "" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>

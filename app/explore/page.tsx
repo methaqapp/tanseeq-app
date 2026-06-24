@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Search, MapPin, Filter, ChevronDown, Loader2, AlertCircle, User, Bell, Menu, ShieldCheck, Heart, Target, SlidersHorizontal } from "lucide-react";
 import { databases } from "@/lib/appwrite";
 import { Query } from "appwrite";
-
+import TopHeader from "@/components/TopHeader";
 const RingIcon = ({ size = 24, className = "" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <path d="M8.5 7.5L12 3l3.5 4.5h-7z" />
@@ -34,13 +34,17 @@ export default function ExplorePage() {
       setLoading(true);
       try {
         if (!process.env.NEXT_PUBLIC_APPWRITE_DB_ID) throw new Error("Missing Env Variables");
-        const response = await databases.listDocuments(
+       const response = await databases.listDocuments(
           process.env.NEXT_PUBLIC_APPWRITE_DB_ID,
           process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID as string,
-          [Query.limit(100), Query.orderDesc("$createdAt")] 
+          [
+            Query.equal("status", ["منشور", "مقبول"]), 
+            Query.limit(100), 
+            Query.orderDesc("$createdAt")
+          ] 
         );
-        const approvedDocs = response.documents.filter(doc => doc.status === "منشور" || doc.status === "مقبول");
-        setRequests(approvedDocs);
+        
+        setRequests(response.documents);
       } catch (error: any) {
         setErrorMsg("حدث خطأ في جلب البيانات، يرجى المحاولة لاحقاً.");
       } finally {
@@ -49,7 +53,6 @@ export default function ExplorePage() {
     };
     fetchRequests();
   }, []);
-
   const filteredRequests = requests.filter(req => {
     const matchesTab = activeTab === "men" ? (req.type === "men" || req.type === "رجال" || req.type === "رجل" || req.type === "ذكر") : (req.type === "women" || req.type === "نساء" || req.type === "أنثى" || req.type === "انثى");
     const matchesSearch = !searchQuery || req.request_id?.toString().includes(searchQuery) || req.city?.includes(searchQuery) || (req.bio && req.bio.includes(searchQuery));
@@ -84,20 +87,14 @@ export default function ExplorePage() {
       <div className="bg-[#0f172a] pt-10 pb-20 px-4 relative shadow-lg">
         <div className="absolute top-0 right-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 pointer-events-none"></div>
         <div className="absolute top-0 left-0 w-64 h-64 bg-[#c29b57] rounded-full blur-[120px] opacity-10 pointer-events-none"></div>
-        <div className="relative z-10 max-w-5xl mx-auto flex items-center justify-between mb-8">
-          <button className="w-10 h-10 border border-slate-700/60 rounded-full flex items-center justify-center text-white hover:bg-white/10 transition"><Menu size={20} /></button>
-          <div className="text-center">
-            <h1 className="text-2xl md:text-4xl font-bold text-[#c29b57] tracking-tight mb-1">استكشف الطلبات</h1>
-            <p className="text-[11px] md:text-sm text-slate-200">طلبات موثقة ومراجعة بعناية</p>
-            <div className="flex items-center justify-center gap-2 mt-3 text-[#c29b57] opacity-80">
-               <div className="w-8 h-px bg-[#c29b57]"></div>
-               <Heart size={10} fill="currentColor" />
-               <div className="w-8 h-px bg-[#c29b57]"></div>
-            </div>
-          </div>
-          <button className="w-10 h-10 border border-slate-700/60 rounded-full flex items-center justify-center text-white hover:bg-white/10 transition"><Bell size={18} /></button>
-        </div>
-        <div className="relative z-10 max-w-md mx-auto bg-[#1a233a] p-1.5 rounded-full flex items-center border border-slate-700/50">
+        {/* تم التعديل هنا: استدعاء المكون الذكي بدلاً من الأكواد القديمة الثابتة */}
+        <div className="relative z-[70] mb-8">
+          <TopHeader 
+            title="استكشف الطلبات" 
+            subtitle="طلبات موثقة ومراجعة بعناية" 
+            showLaurels={false} 
+          />
+        </div>        <div className="relative z-10 max-w-md mx-auto bg-[#1a233a] p-1.5 rounded-full flex items-center border border-slate-700/50">
           <button onClick={() => setActiveTab('women')} className={`flex-1 py-3 text-[13px] md:text-sm rounded-full flex items-center justify-center gap-2 transition-all duration-300 ${activeTab === 'women' ? "bg-[#0f172a] text-[#c29b57] font-bold shadow-md border border-[#c29b57]/20" : "text-white/70 font-medium hover:text-white"}`}>طلبات النساء <User size={16} /></button>
           <button onClick={() => setActiveTab('men')} className={`flex-1 py-3 text-[13px] md:text-sm rounded-full flex items-center justify-center gap-2 transition-all duration-300 ${activeTab === 'men' ? "bg-[#0f172a] text-[#c29b57] font-bold shadow-md border border-[#c29b57]/20" : "text-white/70 font-medium hover:text-white"}`}>طلبات الرجال <User size={16} /></button>
         </div>

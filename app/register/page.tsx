@@ -93,7 +93,8 @@ const initialFormState = {
     try {
       let cleanPhone = formData.whatsapp_number.replace(/[^0-9]/g, '');
       if (cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1); 
-      const internationalPhone = `${getDialCode(formData.country)}${cleanPhone}`;
+      const internationalPhone = `+966${cleanPhone}`;
+      //const internationalPhone = `${getDialCode(formData.country)}${cleanPhone}`;
 
       if (!(window as any).recaptchaVerifier) {
         (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
@@ -136,7 +137,8 @@ const initialFormState = {
       
       let finalPhoneNumber = formData.whatsapp_number;
       if (finalPhoneNumber.startsWith('0')) finalPhoneNumber = finalPhoneNumber.substring(1); 
-      const internationalPhone = `${getDialCode(formData.country)}${finalPhoneNumber}`;
+      const internationalPhone = `+966${finalPhoneNumber}`;
+      // const internationalPhone = `${getDialCode(formData.country)}${finalPhoneNumber}`;
 
       const submitData = {
         request_id: generatedRequestId,
@@ -237,7 +239,7 @@ const initialFormState = {
             
             <div className="flex items-center justify-center max-w-sm mx-auto relative">
               <div className="absolute top-1/2 left-0 right-0 h-[2px] bg-[#f5f3f3] -z-10 transform -translate-y-1/2"></div>
-              {[1, 2, 3, 4, 5].map((i) => (
+              {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="flex-1 flex justify-center relative bg-white px-2">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-colors duration-300 ${
                     step === i ? "bg-[#c29b57] border-[#c29b57] text-white" : 
@@ -257,7 +259,7 @@ const initialFormState = {
                 {step === 1 && (
                   <div className="space-y-5 animate-in fade-in duration-300">
                     <div className="text-center mb-8">
-                      <p className="text-[#727974] text-xs mb-1">الخطوة 1 من 5</p>
+                      <p className="text-[#727974] text-xs mb-1">الخطوة 1 من 4</p>
                       <h2 className="text-xl font-bold text-[#0f172a]">المعلومات الأساسية</h2>
                     </div>
                     <div>
@@ -295,7 +297,7 @@ const initialFormState = {
                 {step === 2 && (
                   <div className="space-y-5 animate-in fade-in duration-300">
                     <div className="text-center mb-8">
-                      <p className="text-[#727974] text-xs mb-1">الخطوة 2 من 5</p>
+                      <p className="text-[#727974] text-xs mb-1">الخطوة 2 من 4</p>
                       <h2 className="text-xl font-bold text-[#0f172a]">البيانات العامة</h2>
                     </div>
                     <div>
@@ -377,7 +379,7 @@ const initialFormState = {
                 {step === 3 && (
                   <div className="space-y-5 animate-in fade-in duration-300">
                     <div className="text-center mb-8">
-                      <p className="text-[#727974] text-xs mb-1">الخطوة 3 من 5</p>
+                      <p className="text-[#727974] text-xs mb-1">الخطوة 3 من 4</p>
                       <h2 className="text-xl font-bold text-[#0f172a]">نبذة ومواصفات الطرف الآخر</h2>
                     </div>
                     <div>
@@ -424,7 +426,7 @@ const initialFormState = {
                 {step === 4 && (
                   <div className="space-y-6 animate-in fade-in duration-300">
                     <div className="text-center mb-6">
-                      <p className="text-slate-500 text-xs mb-1">الخطوة 4 من 5</p>
+                      <p className="text-slate-500 text-xs mb-1">الخطوة 4 من 4</p>
                       <h2 className="text-xl font-bold text-[#0f172a]">التحقق والتواصل</h2>
                       <Phone className="w-12 h-12 text-[#c29b57] mx-auto mt-4 opacity-80" />
                     </div>
@@ -436,26 +438,28 @@ const initialFormState = {
                     </div>
 
                     <div>
-                      <label className="block mb-2 text-sm font-bold text-[#0f172a] text-center">رقم الجوال</label>
+                      <label className="block mb-2 text-sm font-bold text-[#0f172a] text-center">رقم الجوال (للسعودية فقط حالياً)</label>
                       <div className="flex border border-slate-200 rounded-xl overflow-hidden focus-within:border-[#c29b57] transition bg-white" dir="ltr">
+                        {/* تثبيت المفتاح والعلم للسعودية بغض النظر عن دولة الإقامة */}
                         <span className="inline-flex items-center px-4 bg-[#f8fafc] border-r border-slate-200 text-[#0f172a] font-bold text-sm">
-                          {formData.country ? getDialCode(formData.country) : "+966"} <span className="mr-2">🇸🇦</span>
+                          +966 <span className="ml-2">🇸🇦</span>
                         </span>
                         <input 
                           type="tel" name="whatsapp_number" value={formData.whatsapp_number} onChange={handlePhoneChange} required placeholder="05XXXXXXXX"
                           className="flex-1 w-full p-4 bg-transparent text-[#0f172a] font-medium outline-none text-left" 
                         />
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2 mt-4 justify-center">
+                    </div>                    <div className="flex items-center gap-2 mt-4 justify-center">
                       <input type="checkbox" required id="privacy" className="w-4 h-4 accent-[#0f172a]" />
                       <label htmlFor="privacy" className="text-sm font-bold text-[#0f172a]">أوافق على سياسة الخصوصية</label>
                     </div>
                     
                     {/* 💡 حاوية ريكابتشا مخفية مهمة جداً لـ Firebase */}
-                    <div id="recaptcha-container"></div>
                   </div>
                 )}
+
+                <div id="recaptcha-container"></div>
+                  
                 <div className="flex gap-4 pt-6 mt-4">
                   {step > 1 && (
                     <button type="button" onClick={prevStep} className="px-6 py-4 rounded-xl font-bold text-[#0f172a] border border-[#e2e8f0] bg-white hover:bg-[#f8fafc] transition">

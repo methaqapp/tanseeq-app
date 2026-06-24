@@ -4,6 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { Menu, Bell, X, Home, Search, User, Phone, ShieldCheck } from "lucide-react";
 
+// واجهة الخصائص (Props) لجعل المكون ديناميكياً
+interface TopHeaderProps {
+  title?: string;
+  subtitle?: string;
+  showLaurels?: boolean;
+}
+
 // أيقونة الغصن الجمالية للشعار
 const LaurelSvg = ({ className, flipped }: { className?: string, flipped?: boolean }) => (
   <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} style={{ transform: flipped ? 'scaleX(-1)' : 'none' }}>
@@ -14,7 +21,11 @@ const LaurelSvg = ({ className, flipped }: { className?: string, flipped?: boole
   </svg>
 );
 
-export default function TopHeader() {
+export default function TopHeader({ 
+  title = "ميثاق", 
+  subtitle = "منصة زواج موثوقة", 
+  showLaurels = true 
+}: TopHeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const closeMenu = () => setIsMenuOpen(false);
@@ -28,12 +39,16 @@ export default function TopHeader() {
         </button>
         
         <div className="flex items-center gap-3">
-          <LaurelSvg className="w-8 h-8 text-[#c29b57] hidden md:block" />
+          {/* إظهار الغصن فقط إذا كانت showLaurels تساوي true */}
+          {showLaurels && <LaurelSvg className="w-8 h-8 text-[#c29b57] hidden md:block" />}
+          
           <div className="flex flex-col items-center">
-            <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight mb-1">ميثاق</h1>
-            <p className="text-[10px] md:text-xs text-[#c29b57] font-semibold tracking-wide mt-1">منصة زواج موثوقة</p>
+            {/* استخدام المتغيرات بدلاً من النصوص الثابتة */}
+            <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight mb-1">{title}</h1>
+            <p className="text-[10px] md:text-xs text-[#c29b57] font-semibold tracking-wide mt-1">{subtitle}</p>
           </div>
-          <LaurelSvg className="w-8 h-8 text-[#c29b57] hidden md:block" flipped />
+          
+          {showLaurels && <LaurelSvg className="w-8 h-8 text-[#c29b57] hidden md:block" flipped />}
         </div>
 
         {/* 2. الجرس والإشعارات */}

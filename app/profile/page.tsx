@@ -63,7 +63,8 @@ export default function ProfilePage() {
     try {
       let cleanPhone = loginPhone.replace(/[^0-9]/g, '');
       if (cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1); 
-      const internationalPhone = `${getDialCode(loginCountry)}${cleanPhone}`;
+      const internationalPhone = `+966${cleanPhone}`;
+      //const internationalPhone = `${getDialCode(loginCountry)}${cleanPhone}`;
 
       if (!(window as any).recaptchaVerifier) {
         (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
@@ -101,7 +102,8 @@ export default function ProfilePage() {
       // استدعاء السيرفر للبحث وزراعة الكوكيز
       let cleanPhone = loginPhone.replace(/[^0-9]/g, '');
       if (cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1); 
-      const internationalPhone = `${getDialCode(loginCountry)}${cleanPhone}`;
+      const internationalPhone = `+966${cleanPhone}`;
+      //for accpeting all GCC country phone numbers  const internationalPhone = `${getDialCode(loginCountry)}${cleanPhone}`;
 
       const res = await fetch('/api/get-profile', {
         method: 'POST',
@@ -172,15 +174,14 @@ export default function ProfilePage() {
             <div>
               <label className="block mb-2 text-sm font-bold text-[#0f172a] text-center">رقم الجوال</label>
               <div className="flex border border-slate-200 rounded-xl overflow-hidden focus-within:border-[#c29b57] transition bg-white" dir="ltr">
-                <select value={loginCountry} onChange={(e) => setLoginCountry(e.target.value)} className="bg-[#f8fafc] border-r border-slate-200 text-[#0f172a] font-bold text-sm px-3 outline-none cursor-pointer">
-                  {gulfCountries.map(c => <option key={c} value={c}>{getDialCode(c)}</option>)}
-                </select>
+                <span className="inline-flex items-center px-4 bg-[#f8fafc] border-r border-slate-200 text-[#0f172a] font-bold text-sm">
+                  +966 <span className="ml-2">🇸🇦</span>
+                </span>
                 <input 
                   type="tel" value={loginPhone} onChange={(e) => setLoginPhone(e.target.value)} required placeholder="05XXXXXXXX"
                   className="flex-1 w-full p-4 bg-transparent text-[#0f172a] font-bold tracking-wider outline-none text-left" 
                 />
-              </div>
-            </div>
+              </div>            </div>
             <div id="recaptcha-container"></div>
             <button type="submit" disabled={loading} className="w-full bg-[#0f172a] text-white py-4 rounded-xl font-bold hover:bg-[#1e293b] transition shadow-md flex justify-center items-center gap-2">
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "إرسال رمز الدخول"}
@@ -205,7 +206,7 @@ export default function ProfilePage() {
              <ShieldCheck className="w-8 h-8 text-[#c29b57]" />
           </div>
           <h2 className="text-2xl font-bold text-[#0f172a] mb-2 text-center">إدخال رمز التحقق</h2>
-          <p className="text-slate-500 text-sm font-medium text-center mb-8">تم إرسال الرمز للرقم: <span dir="ltr" className="font-bold text-[#0f172a]">{getDialCode(loginCountry)} {loginPhone}</span></p>
+          <p className="text-slate-500 text-sm font-medium text-center mb-8">تم إرسال الرمز للرقم: <span dir="ltr" className="font-bold text-[#0f172a]">+966 {loginPhone}</span></p>
           
           {error && <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm font-bold mb-6 text-center border border-red-100">{error}</div>}
 

@@ -136,7 +136,7 @@ export default function HomePage() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 grid grid-cols-2 gap-3 mb-12">
-        <Link href="/register?type=men" className="bg-[#0f172a] rounded-[1.5rem] h-40 md:h-48 flex overflow-hidden shadow-lg relative group border border-[#c29b57]/20 p-4 justify-end items-center">
+        <Link href="/explore" className="bg-[#0f172a] rounded-[1.5rem] h-40 md:h-48 flex overflow-hidden shadow-lg relative group border border-[#c29b57]/20 p-4 justify-end items-center">
            <LaurelSvg className="absolute -left-10 top-0 w-32 h-32 text-[#c29b57] opacity-10 group-hover:scale-110 transition-transform duration-700 pointer-events-none" />
            <div className="absolute left-0 top-0 bottom-0 w-[55%] pointer-events-none">
               <div className="w-full h-full bg-[url('/men-card-bg.png')] bg-cover bg-center transition-transform duration-700 group-hover:scale-105 opacity-80"></div>
@@ -152,7 +152,7 @@ export default function HomePage() {
            </div>
         </Link>
 
-        <Link href="/register?type=women" className="bg-[#fcfaf6] rounded-[1.5rem] h-40 md:h-48 flex overflow-hidden shadow-lg relative group border border-[#ebd9b4] p-4 justify-end items-center">
+        <Link href="/explore" className="bg-[#fcfaf6] rounded-[1.5rem] h-40 md:h-48 flex overflow-hidden shadow-lg relative group border border-[#ebd9b4] p-4 justify-end items-center">
            <LaurelSvg className="absolute -left-10 top-0 w-32 h-32 text-[#c29b57] opacity-10 group-hover:scale-110 transition-transform duration-700 pointer-events-none" />
            <div className="absolute left-0 top-0 bottom-0 w-[55%] pointer-events-none">
               <div className="w-full h-full bg-[url('/women-card-bg.png')] bg-cover bg-center transition-transform duration-700 group-hover:scale-105 opacity-80"></div>
