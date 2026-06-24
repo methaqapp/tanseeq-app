@@ -22,13 +22,14 @@ const getDialCode = (countryName: string) => {
   return codes[countryName] || "+966";
 };
 
+// 💡 أضفنا skin_color هنا واحتفظنا بالباقي لتجنب كسر الباك إند
 const initialFormState = {
   first_name: "", age: "", nationality: "", country: "", region: "", social_status: "", has_children: "", children_count: "", education_level: "",
-  job: "", wealth_level: "", housing_type: "", height: "", weight: "", smoking: "", marriage_type: "", want_children: "", health_status: "",
+  job: "", wealth_level: "", housing_type: "", height: "", weight: "", smoking: "", skin_color: "", marriage_type: "", want_children: "", health_status: "",
   bio: "", requirements: "", notes: "", whatsapp_number: "", origin: "", tribe_name: "" 
 };
 
- function RegisterContent() {
+function RegisterContent() {
   const searchParams = useSearchParams();
   const initialType = searchParams.get("type") as "men" | "women" | null;
 
@@ -42,7 +43,6 @@ const initialFormState = {
   const [otp, setOtp] = useState("");
   const [showOtpScreen, setShowOtpScreen] = useState(false);
   
-  // 💡 إضافة State جديد لحفظ جلسة التحقق من Firebase
   const [confirmationResult, setConfirmationResult] = useState<any>(null);
 
   useEffect(() => {
@@ -85,7 +85,6 @@ const initialFormState = {
   const nextStep = () => setStep((prev) => Math.min(prev + 1, 4));
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
 
-  //  إرسال الرقم إلى Firebase
   const handlePhoneVerification = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -94,7 +93,6 @@ const initialFormState = {
       let cleanPhone = formData.whatsapp_number.replace(/[^0-9]/g, '');
       if (cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1); 
       const internationalPhone = `+966${cleanPhone}`;
-      //const internationalPhone = `${getDialCode(formData.country)}${cleanPhone}`;
 
       if (!(window as any).recaptchaVerifier) {
         (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
@@ -119,16 +117,13 @@ const initialFormState = {
     }
   };
 
-  //  التحقق من الكود وحفظ البيانات
   const handleFinalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // 1. التحقق من الكود المدخل مع Firebase
       await confirmationResult.confirm(otp);
 
-      // 2. تجهيز البيانات
       const randomNum = Math.floor(Math.random() * 900000) + 100000;
       const generatedRequestId = `MTQ-${randomNum}`;
 
@@ -138,25 +133,22 @@ const initialFormState = {
       let finalPhoneNumber = formData.whatsapp_number;
       if (finalPhoneNumber.startsWith('0')) finalPhoneNumber = finalPhoneNumber.substring(1); 
       const internationalPhone = `+966${finalPhoneNumber}`;
-      // const internationalPhone = `${getDialCode(formData.country)}${finalPhoneNumber}`;
 
       const submitData = {
         request_id: generatedRequestId,
         type: formType,
         source: "الموقع",
         status: "قيد المراجعة",
-        ...formData,
+        ...formData, // هذا السطر سيحمل skin_color الجديد تلقائياً
         whatsapp_number: internationalPhone, 
         age: parseInt(formData.age, 10) || null,
         height: parseInt(formData.height, 10) || null,
         weight: parseInt(formData.weight, 10) || null,
         has_children: finalHasChildren,
         children_count: finalHasChildren === "يوجد أبناء" ? parseInt(formData.children_count, 10) : null,
-        housing_type: formType === "men" ? formData.housing_type : null,
-        tribe_name: formData.origin === "قبلي" ? formData.tribe_name : null,
+        tribe_name: formData.origin === "قبيلي" ? formData.tribe_name : null,
       };
 
-      // 3.  هنا التغيير الجذري: نرسل البيانات للـ API الآمن الخاص بنا
       const res = await fetch('/api/create-profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -169,13 +161,14 @@ const initialFormState = {
         throw new Error(data.error || "حدث خطأ أثناء حفظ البيانات في السيرفر");
       }
       
-      // 4. إكمال خطوات النجاح وحفظ الجلسة
       setSubmittedId(generatedRequestId);
       setSuccess(true);
+      
+      localStorage.setItem("mithaq_submitted", "true");
+      localStorage.setItem("mithaq_req_id", generatedRequestId);
 
     } catch (error: any) {
       console.error("Error verifying OTP or submitting:", error);
-      // إظهار رسالة خطأ دقيقة للمستخدم
       alert(error.message.includes("auth/invalid-verification-code") 
         ? "رمز التحقق غير صحيح، يرجى المحاولة مجدداً." 
         : "حدث خطأ غير متوقع، يرجى المحاولة لاحقاً.");
@@ -183,6 +176,7 @@ const initialFormState = {
       setLoading(false);
     }
   };
+
   if (success) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] p-4" dir="rtl">
@@ -199,9 +193,6 @@ const initialFormState = {
             يرجى الاحتفاظ برقم الملف لمتابعة التحديثات مستقبلاً. سيتم مراجعة الطلب من الإدارة، وسنتواصل معك عند الحاجة عبر وسيلة التواصل الرسمية المعتمدة.
           </p>
           <div className="flex flex-col gap-3 mt-6">
-            <a href="https://wa.me/966527585083" target="_blank" rel="noopener noreferrer" className="w-full bg-green-500 text-white px-8 py-4 rounded-xl hover:bg-green-600 transition font-bold flex items-center justify-center gap-2">
-              <Phone size={18} /> تواصل مع الدعم
-            </a>
             <Link href="/" className="w-full bg-[#0f172a] text-white px-8 py-4 rounded-xl hover:bg-[#1e293b] transition font-bold block text-center">
                العودة للرئيسية
             </Link>
@@ -210,6 +201,7 @@ const initialFormState = {
       </div>
     );
   }
+
   return (
     <main className="min-h-screen bg-[#f8fafc] font-sans flex flex-col items-center py-10 px-4" dir="rtl">
       
@@ -256,15 +248,16 @@ const initialFormState = {
             {!showOtpScreen ? (
               <form onSubmit={step === 4 ? handlePhoneVerification : (e) => { e.preventDefault(); nextStep(); }} className="space-y-6">
                 
+                {/* 💡 الخطوة 1: البيانات الأساسية */}
                 {step === 1 && (
                   <div className="space-y-5 animate-in fade-in duration-300">
                     <div className="text-center mb-8">
                       <p className="text-[#727974] text-xs mb-1">الخطوة 1 من 4</p>
-                      <h2 className="text-xl font-bold text-[#0f172a]">المعلومات الأساسية</h2>
+                      <h2 className="text-xl font-bold text-[#0f172a]">البيانات الأساسية</h2>
                     </div>
                     <div>
-                      <label className="block mb-2 text-sm font-bold text-[#0f172a]">الاسم الأول أو المستعار <span className="text-slate-400 font-normal">(اختياري)</span></label>
-                      <input type="text" name="first_name" value={formData.first_name} onChange={handleChange} placeholder="مثال: أبو محمد، أم خالد..." className="w-full border border-[#e2e8f0] rounded-xl p-4 bg-[#f8fafc] focus:bg-white focus:border-[#c29b57] outline-none transition" />
+                      <label className="block mb-2 text-sm font-bold text-[#0f172a]">الاسم الأول أو اسم مستعار <span className="text-slate-400 font-normal">(اختياري)</span></label>
+                      <input type="text" name="first_name" value={formData.first_name} onChange={handleChange} placeholder="مثال: فهد، أم خالد..." className="w-full border border-[#e2e8f0] rounded-xl p-4 bg-[#f8fafc] focus:bg-white focus:border-[#c29b57] outline-none transition" />
                     </div>
                     <div>
                       <label className="block mb-2 text-sm font-bold text-[#0f172a]">العمر</label>
@@ -275,7 +268,7 @@ const initialFormState = {
                     </div>
                     <div>
                       <label className="block mb-2 text-sm font-bold text-[#0f172a]">الجنسية</label>
-                      <input type="text" name="nationality" value={formData.nationality} onChange={handleChange} required placeholder="اكتب جنسيتك" className="w-full border border-[#e2e8f0] rounded-xl p-4 bg-[#f8fafc] focus:bg-white focus:border-[#c29b57] outline-none transition" />
+                      <input type="text" name="nationality" value={formData.nationality} onChange={handleChange} required placeholder="مثال: سعودي" className="w-full border border-[#e2e8f0] rounded-xl p-4 bg-[#f8fafc] focus:bg-white focus:border-[#c29b57] outline-none transition" />
                     </div>
                     <div>
                       <label className="block mb-2 text-sm font-bold text-[#0f172a]">دولة الإقامة</label>
@@ -294,11 +287,12 @@ const initialFormState = {
                   </div>
                 )}
 
+                {/* 💡 الخطوة 2: معلومات الحالة (تم الترتيب حسب رغبة العميل) */}
                 {step === 2 && (
                   <div className="space-y-5 animate-in fade-in duration-300">
                     <div className="text-center mb-8">
                       <p className="text-[#727974] text-xs mb-1">الخطوة 2 من 4</p>
-                      <h2 className="text-xl font-bold text-[#0f172a]">البيانات العامة</h2>
+                      <h2 className="text-xl font-bold text-[#0f172a]">معلومات الحالة</h2>
                     </div>
                     <div>
                       <label className="block mb-2 text-sm font-bold text-[#0f172a]">الحالة الاجتماعية</label>
@@ -327,102 +321,97 @@ const initialFormState = {
 
                     <div>
                       <label className="block mb-2 text-sm font-bold text-[#0f172a]">المستوى التعليمي</label>
-                      <select name="education_level" value={formData.education_level} onChange={handleChange} required className="w-full border border-[#e2e8f0] rounded-xl p-4 bg-[#f8fafc] outline-none focus:border-[#c29b57]">
-                        <option value="">اختر مستواك التعليمي</option><option>ثانوي</option><option>دبلوم</option><option>بكالوريوس</option><option>ماجستير</option><option>دكتوراه</option>
-                      </select>
+                      <input type="text" name="education_level" value={formData.education_level} onChange={handleChange} required placeholder="مثال: بكالوريوس" className="w-full border border-[#e2e8f0] rounded-xl p-4 bg-[#f8fafc] outline-none focus:border-[#c29b57]" />
                     </div>
                     <div>
                       <label className="block mb-2 text-sm font-bold text-[#0f172a]">الوظيفة</label>
-                      <input type="text" name="job" value={formData.job} onChange={handleChange} required placeholder="اختر وظيفتك" className="w-full border border-[#e2e8f0] rounded-xl p-4 bg-[#f8fafc] outline-none focus:border-[#c29b57]" />
-                    </div>
-                    <div>
-                      <label className="block mb-2 text-sm font-bold text-[#0f172a]">الحالة المادية</label>
-                      <select name="wealth_level" value={formData.wealth_level} onChange={handleChange} required className="w-full border border-[#e2e8f0] rounded-xl p-4 bg-[#f8fafc] outline-none focus:border-[#c29b57]">
-                        <option value="">اختر حالتك المادية</option><option>بسيط</option><option>متوسط</option><option>جيد</option><option>ممتاز</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block mb-2 text-sm font-bold text-[#0f172a]">الرغبة في الإنجاب</label>
-                      <select name="want_children" value={formData.want_children} onChange={handleChange} required className="w-full border border-[#e2e8f0] rounded-xl p-4 bg-[#f8fafc] outline-none focus:border-[#c29b57]">
-                        <option value="">اختر رغبتك</option><option>نعم</option><option>لا</option><option>يناقش لاحقاً</option>
-                      </select>
+                      <input type="text" name="job" value={formData.job} onChange={handleChange} required placeholder="مثال: معلم، مهندس، لا أعمل..." className="w-full border border-[#e2e8f0] rounded-xl p-4 bg-[#f8fafc] outline-none focus:border-[#c29b57]" />
                     </div>
 
-                    {formType === "men" && (
+                    <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block mb-2 text-sm font-bold text-[#0f172a]">نوع السكن</label>
-                        <select name="housing_type" value={formData.housing_type} onChange={handleChange} required className="w-full border border-[#e2e8f0] rounded-xl p-4 bg-[#f8fafc] outline-none focus:border-[#c29b57]">
-                          <option value="">اختر نوع السكن</option><option>سكن مستقل</option><option>مع العائلة</option><option>أخرى</option>
-                        </select>
+                        <label className="block mb-2 text-sm font-bold text-[#0f172a]">الطول (سم) <span className="text-slate-400 font-normal">(اختياري)</span></label>
+                        <input type="number" name="height" value={formData.height} onChange={handleChange} className="w-full border border-[#e2e8f0] rounded-xl p-4 bg-[#f8fafc] outline-none focus:border-[#c29b57]" />
                       </div>
-                    )}
+                      <div>
+                        <label className="block mb-2 text-sm font-bold text-[#0f172a]">الوزن (كجم) <span className="text-slate-400 font-normal">(اختياري)</span></label>
+                        <input type="number" name="weight" value={formData.weight} onChange={handleChange} className="w-full border border-[#e2e8f0] rounded-xl p-4 bg-[#f8fafc] outline-none focus:border-[#c29b57]" />
+                      </div>
+                    </div>
 
                     <div>
-                      <label className="block mb-2 text-sm font-bold text-[#0f172a]">التدخين</label>
-                      <select name="smoking" value={formData.smoking} onChange={handleChange} required className="w-full border border-[#e2e8f0] rounded-xl p-4 bg-[#f8fafc] outline-none focus:border-[#c29b57]">
-                        <option value="">اختر موقفك من التدخين</option><option>لا أدخن</option><option>أدخن</option><option>شيشة / إلكتروني</option>
+                      <label className="block mb-2 text-sm font-bold text-[#0f172a]">لون البشرة <span className="text-slate-400 font-normal">(اختياري)</span></label>
+                      <select name="skin_color" value={formData.skin_color} onChange={handleChange} className="w-full border border-[#e2e8f0] rounded-xl p-4 bg-[#f8fafc] outline-none focus:border-[#c29b57]">
+                        <option value="">أفضل عدم الإفصاح</option>
+                        <option value="أبيض">أبيض</option>
+                        <option value="حنطي فاتح">حنطي فاتح</option>
+                        <option value="حنطي">حنطي</option>
+                        <option value="أسمر">أسمر</option>
                       </select>
                     </div>
-                    <div className="flex gap-4">
-                      <div className="w-1/2">
-                        <label className="block mb-2 text-sm font-bold text-[#0f172a]">الطول (سم)</label>
-                        <input type="number" name="height" value={formData.height} onChange={handleChange} required className="w-full border border-[#e2e8f0] rounded-xl p-4 bg-[#f8fafc] outline-none focus:border-[#c29b57]" />
-                      </div>
-                      <div className="w-1/2">
-                        <label className="block mb-2 text-sm font-bold text-[#0f172a]">الوزن (كجم)</label>
-                        <input type="number" name="weight" value={formData.weight} onChange={handleChange} required className="w-full border border-[#e2e8f0] rounded-xl p-4 bg-[#f8fafc] outline-none focus:border-[#c29b57]" />
-                      </div>
+
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                      <label className="block mb-2 text-sm font-bold text-[#0f172a]">القبيلة / الأصل</label>
+                      <select name="origin" value={formData.origin} onChange={handleChange} required className="w-full border border-[#e2e8f0] rounded-xl p-4 bg-white outline-none focus:border-[#c29b57] mb-3">
+                        <option value="">اختر...</option><option value="قبيلي">قبيلي</option><option value="غير قبيلي">غير قبيلي</option><option value="أفضل عدم الإفصاح">أفضل عدم الإفصاح</option>
+                      </select>
+                      {formData.origin === "قبيلي" && (
+                        <input type="text" name="tribe_name" value={formData.tribe_name} onChange={handleChange} placeholder="اسم القبيلة أو العائلة (اختياري)" className="w-full border border-[#e2e8f0] rounded-xl p-4 bg-white outline-none focus:border-[#c29b57] animate-in fade-in" />
+                      )}
                     </div>
                   </div>
                 )}
 
+                {/* 💡 الخطوة 3: الطلب والتفضيلات */}
                 {step === 3 && (
                   <div className="space-y-5 animate-in fade-in duration-300">
                     <div className="text-center mb-8">
                       <p className="text-[#727974] text-xs mb-1">الخطوة 3 من 4</p>
-                      <h2 className="text-xl font-bold text-[#0f172a]">نبذة ومواصفات الطرف الآخر</h2>
+                      <h2 className="text-xl font-bold text-[#0f172a]">الطلب والتفضيلات</h2>
                     </div>
-                    <div>
-                      <label className="block mb-2 text-sm font-bold text-[#0f172a]">نوع الزواج المطلوب</label>
-                      <select name="marriage_type" value={formData.marriage_type} onChange={handleChange} required className="w-full border border-[#e2e8f0] rounded-xl p-4 bg-[#f8fafc] outline-none focus:border-[#c29b57]">
-                        <option value="">اختر نوع الزواج</option><option>معلن</option><option>مسيار</option><option>لا يوجد تفضيل</option>
-                      </select>
-                    </div>
-                    
-                    <div className="space-y-5 border-r-2 border-[#c29b57] pr-4 bg-yellow-50/30 p-4 rounded-xl">
+
+                    <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block mb-2 text-sm font-bold text-[#0f172a]">الأصل</label>
-                        <select name="origin" value={formData.origin} onChange={handleChange} required className="w-full border border-[#e2e8f0] rounded-xl p-4 bg-white outline-none focus:border-[#c29b57]">
-                          <option value="">اختر...</option><option>قبلي</option><option>غير قبلي</option><option>لا يهم</option>
+                        <label className="block mb-2 text-sm font-bold text-[#0f172a]">نوع الزواج المطلوب</label>
+                        <select name="marriage_type" value={formData.marriage_type} onChange={handleChange} required className="w-full border border-[#e2e8f0] rounded-xl p-4 bg-[#f8fafc] outline-none focus:border-[#c29b57]">
+                          <option value="">اختر...</option><option>معلن</option><option>مسيار</option><option>أقبل الاثنين</option>
                         </select>
                       </div>
-                      {formData.origin === "قبلي" && (
-                        <div>
-                          <label className="block mb-2 text-sm font-bold text-[#0f172a]">اسم القبيلة <span className="text-slate-400 font-normal">(اختياري)</span></label>
-                          <input type="text" name="tribe_name" value={formData.tribe_name} onChange={handleChange} placeholder="اكتب اسم القبيلة" className="w-full border border-[#e2e8f0] rounded-xl p-4 bg-white outline-none focus:border-[#c29b57]" />
-                        </div>
-                      )}
+                      <div>
+                        <label className="block mb-2 text-sm font-bold text-[#0f172a]">الرغبة بالإنجاب</label>
+                        <select name="want_children" value={formData.want_children} onChange={handleChange} required className="w-full border border-[#e2e8f0] rounded-xl p-4 bg-[#f8fafc] outline-none focus:border-[#c29b57]">
+                          <option value="">اختر...</option><option>نعم</option><option>لا</option><option>حسب الاتفاق</option>
+                        </select>
+                      </div>
                     </div>
                     
                     <div>
-                      <label className="block mb-2 text-sm font-bold text-[#0f172a]">نبذة عنك</label>
-                      <textarea name="bio" value={formData.bio} onChange={handleChange} required rows={4} placeholder="اكتب نبذة مختصرة عنك..." className="w-full border border-[#e2e8f0] rounded-xl p-4 bg-[#f8fafc] outline-none focus:border-[#c29b57] resize-none" />
+                      <label className="block mb-2 text-sm font-bold text-[#0f172a]">نبذة مختصرة عنك</label>
+                      <textarea name="bio" value={formData.bio} onChange={handleChange} required rows={3} placeholder="عرف بنفسك بشكل مختصر، واذكر اهتماماتك أو ما تحب أن يعرفه الطرف الآخر عنك." className="w-full border border-[#e2e8f0] rounded-xl p-4 bg-[#f8fafc] outline-none focus:border-[#c29b57] resize-none" />
                     </div>
                     <div>
-                      <label className="block mb-2 text-sm font-bold text-[#0f172a]">مواصفات الطرف الآخر</label>
-                      <textarea name="requirements" value={formData.requirements} onChange={handleChange} required rows={4} placeholder="المواصفات المطلوبة..." className="w-full border border-[#e2e8f0] rounded-xl p-4 bg-[#f8fafc] outline-none focus:border-[#c29b57] resize-none" />
+                      <label className="block mb-2 text-sm font-bold text-[#0f172a]">
+                        {formType === 'men' ? 'مواصفات الزوجة المطلوبة' : 'مواصفات الزوج المطلوب'}
+                      </label>
+                      <textarea name="requirements" value={formData.requirements} onChange={handleChange} required rows={3} placeholder="اذكر أهم المواصفات التي تبحث عنها مثل الأخلاق، الجدية، العمر، أو غيرها..." className="w-full border border-[#e2e8f0] rounded-xl p-4 bg-[#f8fafc] outline-none focus:border-[#c29b57] resize-none" />
                     </div>
                     <div>
-                      <label className="block mb-2 text-sm font-bold text-[#0f172a]">الحالة الصحية</label>
-                      <input type="text" name="health_status" value={formData.health_status} onChange={handleChange} required placeholder="مثال: سليم ولله الحمد..." className="w-full border border-[#e2e8f0] rounded-xl p-4 bg-[#f8fafc] focus:bg-white focus:border-[#c29b57] outline-none transition" />
+                      <label className="block mb-2 text-sm font-bold text-[#0f172a]">تفضيلات إضافية <span className="text-slate-400 font-normal">(اختياري)</span></label>
+                      <textarea name="notes" value={formData.notes} onChange={handleChange} rows={2} placeholder="يمكنك إضافة أي شروط إضافية مثل الجنسية، المنطقة، القبيلة..." className="w-full border border-[#e2e8f0] rounded-xl p-4 bg-[#f8fafc] outline-none focus:border-[#c29b57] resize-none" />
                     </div>
-                    <div>
-                      <label className="block mb-2 text-sm font-bold text-[#0f172a]">ملاحظات إضافية <span className="text-slate-400 font-normal">(اختياري)</span></label>
-                      <textarea name="notes" value={formData.notes} onChange={handleChange} rows={2} className="w-full border border-[#e2e8f0] rounded-xl p-4 bg-[#f8fafc] outline-none focus:border-[#c29b57] resize-none" />
+
+                    {/* رسالة الطمأنينة التي طلبها العميل */}
+                    <div className="bg-amber-50 p-4 rounded-xl border border-amber-100 mt-6 text-center">
+                      <ShieldCheck className="w-6 h-6 text-amber-500 mx-auto mb-2" />
+                      <p className="text-xs font-bold text-amber-800 mb-1">🔒 خصوصيتك تهمنا</p>
+                      <p className="text-[10px] text-amber-700/80 leading-relaxed font-medium">
+                        يتم مراجعة جميع الملفات قبل نشرها. لا يتم نشر وسائل التواصل أو البيانات الشخصية. تُعرض نبذة مختصرة فقط، وتبقى بقية التفاصيل لدى إدارة المنصة لغرض التنسيق والمتابعة حفاظاً على خصوصيتك.
+                      </p>
                     </div>
                   </div>
                 )}
 
+                {/* 💡 الخطوة 4: بيانات التواصل (لم يتم تغييرها) */}
                 {step === 4 && (
                   <div className="space-y-6 animate-in fade-in duration-300">
                     <div className="text-center mb-6">
@@ -440,7 +429,6 @@ const initialFormState = {
                     <div>
                       <label className="block mb-2 text-sm font-bold text-[#0f172a] text-center">رقم الجوال (للسعودية فقط حالياً)</label>
                       <div className="flex border border-slate-200 rounded-xl overflow-hidden focus-within:border-[#c29b57] transition bg-white" dir="ltr">
-                        {/* تثبيت المفتاح والعلم للسعودية بغض النظر عن دولة الإقامة */}
                         <span className="inline-flex items-center px-4 bg-[#f8fafc] border-r border-slate-200 text-[#0f172a] font-bold text-sm">
                           +966 <span className="ml-2">🇸🇦</span>
                         </span>
@@ -449,30 +437,31 @@ const initialFormState = {
                           className="flex-1 w-full p-4 bg-transparent text-[#0f172a] font-medium outline-none text-left" 
                         />
                       </div>
-                    </div>                    <div className="flex items-center gap-2 mt-4 justify-center">
+                    </div>
+                    
+                    <div className="flex items-center gap-2 mt-4 justify-center">
                       <input type="checkbox" required id="privacy" className="w-4 h-4 accent-[#0f172a]" />
                       <label htmlFor="privacy" className="text-sm font-bold text-[#0f172a]">أوافق على سياسة الخصوصية</label>
                     </div>
                     
-                    {/* 💡 حاوية ريكابتشا مخفية مهمة جداً لـ Firebase */}
+                    <div id="recaptcha-container"></div>
                   </div>
                 )}
 
-                <div id="recaptcha-container"></div>
-                  
+                {/* أزرار التنقل */}
                 <div className="flex gap-4 pt-6 mt-4">
                   {step > 1 && (
                     <button type="button" onClick={prevStep} className="px-6 py-4 rounded-xl font-bold text-[#0f172a] border border-[#e2e8f0] bg-white hover:bg-[#f8fafc] transition">
                       السابق
                     </button>
                   )}
-
                   <button type="submit" disabled={loading} className="flex-1 py-4 rounded-xl font-bold text-white bg-[#0f172a] hover:bg-[#1a3026] transition shadow-md flex justify-center items-center gap-2">
-                    {loading ? "جاري الإرسال..." : (step === 4 ? "إرسال رمز التحقق" : "التالي")}
+                    {loading ? "جاري المعالجة..." : (step === 4 ? "إرسال رمز التحقق" : "التالي")}
                   </button>
                 </div>
               </form>
             ) : (
+              // شاشة التحقق OTP (لم يتم تغييرها)
               <form onSubmit={handleFinalSubmit} className="space-y-6 animate-in zoom-in-95 duration-300 text-center">
                 <div className="text-center mb-8">
                   <ShieldCheck className="w-12 h-12 text-[#c29b57] mx-auto mb-2" />
@@ -480,7 +469,6 @@ const initialFormState = {
                   <p className="text-[#424844] text-sm">تم إرسال رمز التحقق إلى: <span className="font-bold text-[#0f172a]" dir="ltr">{getDialCode(formData.country)} {formData.whatsapp_number}</span></p>
                 </div>
                 <div className="max-w-xs mx-auto mb-8">
-                  {/* 💡 تغيير طول الرمز إلى 6 لأن Firebase ترسل 6 أرقام */}
                   <input type="text" value={otp} onChange={(e) => setOtp(e.target.value)} maxLength={6} placeholder="------" required className="w-full text-center text-3xl tracking-[1em] font-bold border-b-2 border-[#e2e8f0] bg-transparent py-4 outline-none focus:border-[#c29b57] transition" dir="ltr" />
                 </div>
                 <div className="flex flex-col gap-3 pt-4">
