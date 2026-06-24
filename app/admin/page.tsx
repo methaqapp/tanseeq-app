@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { Loader2, Menu, Heart, Search, CheckCircle2, AlertCircle, LayoutDashboard, Users, User, Settings, X, ShieldCheck, Clock, XCircle, Bell, ChevronLeft, Save, Eye, MapPin } from "lucide-react";
 import PlaceholderAvatar from "@/components/PlaceholderAvatar";
-import { account } from "@/lib/appwrite"; //  استدعاء حسابات Appwrite
 
 const RingIcon = ({ size = 24, className = "" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -14,7 +13,7 @@ const RingIcon = ({ size = 24, className = "" }) => (
 
 export default function AdminDashboard() {
   const [requests, setRequests] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false); // تم تغييرها لتعمل بعد الدخول
+  const [loading, setLoading] = useState(true); 
   const [errorMsg, setErrorMsg] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   
@@ -27,70 +26,12 @@ export default function AdminDashboard() {
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // 💡 حالات مصادقة Appwrite للإدارة
-  const [isAdminAuth, setIsAdminAuth] = useState(false);
-  const [authLoading, setAuthLoading] = useState(true);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loginError, setLoginError] = useState("");
-
-  // 1. التحقق من وجود جلسة Appwrite نشطة عند فتح الصفحة
+  // جلب البيانات مباشرة لأن Middleware قد تحقق من الهوية مسبقاً
   useEffect(() => {
-    checkAdminAuth();
+    fetchRequests();
   }, []);
 
-  const checkAdminAuth = async () => {
-    try {
-      const user = await account.get();
-      // 💡 ضع إيميل الإدارة الخاص بك هنا
-      if (user.email === 'admin@methaq.com' || user.email === 'your-email@example.com') {
-        setIsAdminAuth(true);
-        fetchRequests(); // جلب البيانات بعد التأكد من الهوية
-      } else {
-        // إذا كان مسجلاً لكنه ليس المدير، نقوم بتسجيل خروجه
-        await account.deleteSession('current');
-        setLoginError("هذا الحساب لا يملك صلاحيات الإدارة.");
-      }
-    } catch (error) {
-      // لا توجد جلسة نشطة
-      console.log("Admin not logged in");
-    } finally {
-      setAuthLoading(false);
-    }
-  };
-
-  // 2. تسجيل الدخول باستخدام Appwrite
-  const handleAdminLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAuthLoading(true);
-    setLoginError("");
-
-    try {
-      // إنشاء جلسة عبر Appwrite
-      await account.createEmailPasswordSession(email, password);
-      // التحقق من أن الحساب الذي دخل هو حساب المدير
-      await checkAdminAuth();
-    } catch (error: any) {
-      console.error("Login failed:", error);
-      setLoginError("البريد الإلكتروني أو كلمة المرور غير صحيحة.");
-      setAuthLoading(false);
-    }
-  };
-
-  // تسجيل الخروج
-  const handleLogout = async () => {
-    if (window.confirm("هل أنت متأكد من تسجيل الخروج؟")) {
-      try {
-        await account.deleteSession('current');
-        setIsAdminAuth(false);
-        setRequests([]);
-      } catch (error) {
-        console.error("Logout error", error);
-      }
-    }
-  };
-
-  // 3. جلب الطلبات من الـ API الآمن (السيرفر)
+  // جلب الطلبات من الـ API الآمن (السيرفر)
   const fetchRequests = async () => {
     setLoading(true);
     setErrorMsg("");
@@ -111,7 +52,7 @@ export default function AdminDashboard() {
     }
   };
 
-  // 4. تحديث حالة الطلب عبر الـ API الآمن
+  // تحديث حالة الطلب عبر الـ API الآمن
   const updateStatus = async (id: string, newStatus: string) => {
     setActionLoading(id);
     try {
@@ -138,6 +79,18 @@ export default function AdminDashboard() {
     }
   };
 
+  // تسجيل الخروج الخاص بالإدارة
+  const handleLogout = async () => {
+    if (window.confirm("هل أنت متأكد من تسجيل الخروج؟")) {
+      try {
+        await fetch('/api/admin/logout', { method: 'POST' });
+        window.location.href = '/login';
+      } catch (error) {
+        console.error("Logout error", error);
+      }
+    }
+  };
+
   const filteredRequests = requests.filter(req => {
     const matchesTab = 
       activeTab === "all" ||
@@ -159,45 +112,6 @@ export default function AdminDashboard() {
     setSelectedUser(user);
     setIsModalOpen(true);
   };
-
-  // ================= شاشة التحميل والدخول =================
-
-  if (authLoading) {
-    return <div className="min-h-screen bg-[#0f172a] flex items-center justify-center"><Loader2 className="w-12 h-12 text-[#c29b57] animate-spin" /></div>;
-  }
-
-  if (!isAdminAuth) {
-    return (
-      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center p-4" dir="rtl">
-        <form onSubmit={handleAdminLogin} className="bg-white p-8 rounded-[2rem] shadow-xl max-w-sm w-full text-center animate-in zoom-in-95 duration-300">
-          <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-slate-100 shadow-inner">
-            <ShieldCheck className="w-10 h-10 text-[#c29b57]" />
-          </div>
-          <h2 className="text-2xl font-black text-[#0f172a] mb-2">تسجيل الدخول للإدارة</h2>
-          <p className="text-sm text-slate-500 mb-8 font-medium">يرجى إدخال بيانات المدير للوصول للوحة التحكم.</p>
-          
-          {loginError && <div className="bg-red-50 text-red-600 p-3 rounded-xl text-xs font-bold mb-6 border border-red-100">{loginError}</div>}
-
-          <div className="space-y-4 mb-6">
-            <input 
-              type="email" value={email} onChange={(e) => setEmail(e.target.value)} 
-              placeholder="البريد الإلكتروني..." required dir="ltr"
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-center text-sm outline-none focus:border-[#c29b57] transition-colors text-[#0f172a]"
-            />
-            <input 
-              type="password" value={password} onChange={(e) => setPassword(e.target.value)} 
-              placeholder="كلمة المرور..." required dir="ltr"
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-center text-sm tracking-widest outline-none focus:border-[#c29b57] transition-colors text-[#0f172a]"
-            />
-          </div>
-          
-          <button type="submit" disabled={authLoading} className="w-full bg-[#0f172a] text-white font-bold py-4 rounded-xl hover:bg-[#1e293b] transition flex items-center justify-center shadow-md">
-            {authLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "تسجيل الدخول"}
-          </button>
-        </form>
-      </div>
-    );
-  }
 
   // ================= واجهة الإدارة الرئيسية =================
 

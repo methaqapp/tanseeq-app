@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { account } from "@/lib/appwrite";
 import { Loader2, ShieldCheck, Lock, Mail } from "lucide-react";
 
 export default function LoginPage() {
@@ -18,24 +17,28 @@ export default function LoginPage() {
     setError("");
 
     try {
-      try {
-        await account.get();
-        router.push("/admin");
-        return;
-      } catch (checkErr) {
-        // Not logged in, proceed to login
-      }
+      // 💡 الاتصال بالـ API الآمن الذي بنيناه بدلاً من Appwrite Client
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
 
-      await account.createEmailPasswordSession(email, password);
-      router.push("/admin");
+      const data = await res.json();
+
+      if (data.success) {
+        // 💡 نستخدم window.location.href لعمل Refresh وتحديث الكوكيز للمتصفح
+        window.location.href = "/admin";
+      } else {
+        setError(data.error || "بيانات الدخول غير صحيحة.");
+      }
     } catch (err: any) {
       console.error("Login failed:", err);
-      setError("بيانات الدخول غير صحيحة، أو الحساب غير موجود.");
+      setError("حدث خطأ في الاتصال بالخادم.");
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <div className="min-h-screen bg-[#fcfaf6] flex items-center justify-center p-4 font-sans pb-24" dir="rtl">
       <div className="bg-white w-full max-w-md rounded-[2rem] shadow-xl border border-slate-100 p-8">

@@ -11,14 +11,11 @@ const getSecureClient = () => {
   return new Databases(client);
 };
 
-// 🔒 دالة حماية: تتحقق من وجود جلسة إدارة نشطة
+//  دالة حماية: تتحقق من وجود جلسة الإدارة التي زرعناها (mithaq_admin_session)
 const verifyAdminSession = async () => {
   const cookieStore = await cookies();
-  // Appwrite يقوم بتخزين جلسة تسجيل الدخول في كوكي يبدأ بهذا الاسم
-  const hasAdminSession = cookieStore.getAll().some(cookie => cookie.name.startsWith('a_session_'));
-  return hasAdminSession;
+  return cookieStore.has('mithaq_admin_session');
 };
-
 // 1. جلب جميع الطلبات
 export async function GET() {
   try {
