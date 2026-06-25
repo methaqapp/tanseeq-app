@@ -21,7 +21,7 @@ const saudiCities = [
   "جازان", "نجران", "حائل", "عرعر", "سكاكا", "الباحة", "الخفجي", "ينبع"
 ];
 
-function ExplorePage() {
+function ExploreContent() {
   const searchParams = useSearchParams();
   const genderQuery = searchParams.get('gender');
   const [activeTab, setActiveTab] = useState(genderQuery === 'male' ? 'men' : 'women');
@@ -95,7 +95,7 @@ function ExplorePage() {
       (req.social_status && req.social_status.includes(filterSocialStatus.replace('ة', '').replace('اء', '')));
       
     // 6. فلتر نوع الزواج
-const matchesMarriageType = !filterMarriageType || 
+    const matchesMarriageType = !filterMarriageType || 
       req.marriage_type === filterMarriageType || 
       req.marriage_type === "أقبل الاثنين" || 
       filterMarriageType === "أقبل الاثنين";
