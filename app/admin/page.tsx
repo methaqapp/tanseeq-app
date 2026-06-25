@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Menu, Heart, Search, CheckCircle2, AlertCircle, LayoutDashboard, Users, User, Settings, X, ShieldCheck, Clock, XCircle, Bell, ChevronLeft, Save, Eye, MapPin, Edit2, Briefcase, Plus, Trash2, MessageCircle } from "lucide-react";
+import { Loader2, Copy, Filter, Menu, Heart, Search, CheckCircle2, AlertCircle, LayoutDashboard, Users, User, Settings, X, ShieldCheck, Clock, XCircle, Bell, ChevronLeft, Save, Eye, MapPin, Edit2, Briefcase, Plus, Trash2, MessageCircle } from "lucide-react";
 import PlaceholderAvatar from "@/components/PlaceholderAvatar";
 
 const RingIcon = ({ size = 24, className = "" }) => (
@@ -22,8 +22,18 @@ export default function AdminDashboard() {
   const [errorMsg, setErrorMsg] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   
+  
   const [activeTab, setActiveTab] = useState<"all" | "approved" | "pending" | "rejected">("all");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState("")
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    gender: "",
+    age: "",
+    city: "",
+    social_status: "",
+    tribe_name: "",
+    marriage_type: ""
+  });
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentMenu, setCurrentMenu] = useState<"overview" | "users" | "services" | "settings">("users");
@@ -140,7 +150,7 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error("Error deleting:", error);
-      alert("حدث خطأ أثناء החذ.");
+      alert("حدث خطأ أثناء الحذف.");
     } finally {
       setActionLoading(null);
     }
@@ -158,21 +168,33 @@ export default function AdminDashboard() {
   };
 
   const filteredRequests = requests.filter(req => {
+    // 1. فلتر حالة الطلب (من التبويبات)
     const matchesTab = 
       activeTab === "all" ||
       (activeTab === "pending" && (!req.status || req.status === "قيد المراجعة" || req.status === "pending")) ||
       (activeTab === "approved" && (req.status === "منشور" || req.status === "مقبول" || req.status === "approved")) ||
       (activeTab === "rejected" && (req.status === "مرفوض" || req.status === "rejected"));
     
+    // 2. محرك البحث الشامل (مع حماية الحقول الفارغة لتجنب الأخطاء)
     const matchesSearch = 
-      req.request_id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      req.first_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      req.$id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      req.whatsapp_number?.includes(searchQuery) ||
-      req.region?.includes(searchQuery) ||
-      req.city?.includes(searchQuery);
+      (req.request_id || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (req.first_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (req.$id || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (req.whatsapp_number || "").includes(searchQuery) ||
+      (req.region || "").includes(searchQuery) ||
+      (req.city || "").includes(searchQuery) ||
+      (req.tribe_name || "").includes(searchQuery) ||
+      (req.marriage_type || "").includes(searchQuery);
 
-    return matchesTab && matchesSearch;
+    // 3. الفلاتر المتقدمة
+    const matchesGender = filters.gender ? req.type === filters.gender : true;
+    const matchesAge = filters.age ? req.age?.toString() === filters.age.toString() : true;
+    const matchesCity = filters.city ? (req.city?.includes(filters.city) || req.region?.includes(filters.city)) : true;
+    const matchesSocialStatus = filters.social_status ? req.social_status?.includes(filters.social_status) : true;
+    const matchesTribe = filters.tribe_name ? req.tribe_name?.includes(filters.tribe_name) : true;
+    const matchesMarriageType = filters.marriage_type ? req.marriage_type?.includes(filters.marriage_type) : true;
+
+    return matchesTab && matchesSearch && matchesGender && matchesAge && matchesCity && matchesSocialStatus && matchesTribe && matchesMarriageType;
   });
 
   const handleOpenDetails = (user: any) => {
@@ -315,30 +337,61 @@ export default function AdminDashboard() {
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 bg-white p-4 rounded-[1.5rem] shadow-sm border border-slate-100">
                 
-                {/* قسم البحث وزر الإضافة (تجاوب مثالي للموبايل) */}
+                {/* قسم البحث وزر الإضافة والفلتر */}
                 <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
                   <div className="relative w-full sm:w-64">
                     <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                     <input 
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl focus:border-[#c29b57] focus:ring-1 focus:ring-[#c29b57] py-2.5 pr-11 pl-4 text-xs md:text-sm text-[#0f172a] outline-none transition-all" 
-                      placeholder="البحث برقم الملف، الاسم، أو المدينة..." 
+                      placeholder="البحث الشامل..." 
                       value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
                     />
                   </div>
+                  <button onClick={() => setShowFilters(!showFilters)} className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition shadow-sm ${showFilters ? 'bg-[#c29b57] text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                    <Filter size={16} /> فلاتر متقدمة
+                  </button>
                   <button onClick={handleOpenAdd} className="w-full sm:w-auto bg-[#0f172a] text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-[#16213b] shrink-0 transition shadow-sm">
                     <Plus size={16} /> إضافة ملف يدوي
                   </button>
                 </div>
 
-                {/* الفلاتر */}
-                <div className="flex gap-2 overflow-x-auto hide-scrollbar w-full lg:w-auto pb-1">
-                  {[{ id: 'all', label: 'الكل' }, { id: 'pending', label: 'قيد المراجعة' }, { id: 'approved', label: 'النشطة' }, { id: 'rejected', label: 'المرفوضة' }].map((tab) => (
-                    <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} className={`whitespace-nowrap px-4 py-2 rounded-xl font-bold text-xs transition-all shadow-sm ${activeTab === tab.id ? 'bg-[#0f172a] text-white border border-[#0f172a]' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
-                      {tab.label}
-                    </button>
-                  ))}
+                {/* قائمة الفلاتر المتقدمة (تظهر وتختفي) */}
+                {showFilters && (
+                  <div className="w-full mt-4 bg-slate-50 p-4 rounded-xl border border-slate-100 animate-in fade-in duration-300">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                      <select value={filters.gender} onChange={(e) => setFilters({...filters, gender: e.target.value})} className="bg-white border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-[#c29b57]">
+                        <option value="">الجنس (الكل)</option>
+                        <option value="men">رجال</option>
+                        <option value="women">نساء</option>
+                      </select>
+                      <input type="number" placeholder="العمر المربع" value={filters.age} onChange={(e) => setFilters({...filters, age: e.target.value})} className="bg-white border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-[#c29b57]" />
+                      <input type="text" placeholder="المدينة" value={filters.city} onChange={(e) => setFilters({...filters, city: e.target.value})} className="bg-white border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-[#c29b57]" />
+                      <select value={filters.social_status} onChange={(e) => setFilters({...filters, social_status: e.target.value})} className="bg-white border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-[#c29b57]">
+                        <option value="">الحالة الاجتماعية (الكل)</option>
+                        <option value="أعزب">أعزب</option>
+                        <option value="بكر">بكر</option>
+                        <option value="متزوج">متزوج</option>
+                        <option value="مطلق">مطلق</option>
+                        <option value="مطلقة">مطلقة</option>
+                        <option value="أرمل">أرمل</option>
+                        <option value="أرملة">أرملة</option>
+                      </select>
+                      <input type="text" placeholder="القبيلة" value={filters.tribe_name} onChange={(e) => setFilters({...filters, tribe_name: e.target.value})} className="bg-white border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-[#c29b57]" />
+                      <select value={filters.marriage_type} onChange={(e) => setFilters({...filters, marriage_type: e.target.value})} className="bg-white border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-[#c29b57]">
+                        <option value="">نوع الزواج (الكل)</option>
+                        <option value="معلن">معلن</option>
+                        <option value="مسيار">مسيار</option>
+                        <option value="أقبل الاثنين">أقبل الاثنين</option>
+                      </select>
+                    </div>
+                    <div className="flex justify-end mt-3">
+                      <button onClick={() => setFilters({gender: "", age: "", city: "", social_status: "", tribe_name: "", marriage_type: ""})} className="text-rose-500 hover:text-rose-600 text-xs font-bold flex items-center gap-1">
+                        <X size={14} /> مسح الفلاتر
+                      </button>
+                    </div>
+                  </div>
+                )}
                 </div>
-              </div>
 
               {loading ? (
                 <div className="flex justify-center py-20 bg-white border border-slate-100 rounded-[1.5rem] shadow-sm"><Loader2 className="w-8 h-8 text-[#c29b57] animate-spin" /></div>
@@ -363,7 +416,20 @@ export default function AdminDashboard() {
                       <tbody className="divide-y divide-slate-50">
                         {filteredRequests.map((req) => (
                           <tr key={req.$id} className="hover:bg-slate-50/50 transition-colors group">
-                            <td className="px-6 py-4 font-bold text-slate-400" dir="ltr">#{req.request_id || req.$id.substring(0,4)}</td>
+<td className="px-6 py-4 font-bold text-slate-400 flex items-center gap-2" dir="ltr">
+  #{req.request_id || req.$id.substring(0,4)}
+  <button 
+    onClick={(e) => {
+      e.stopPropagation(); // لمنع فتح النافذة عند الضغط على النسخ
+      navigator.clipboard.writeText(req.request_id || req.$id);
+      alert('تم نسخ رقم الملف بنجاح!');
+    }} 
+    className="hover:text-[#c29b57] transition-colors"
+    title="نسخ رقم الملف"
+  >
+    <Copy size={12} />
+  </button>
+</td>
                             <td className="px-6 py-4 font-extrabold text-[#0f172a] cursor-pointer hover:text-[#c29b57]" onClick={() => handleOpenDetails(req)}>
                               {req.first_name || 'مستخدم غير معروف'}
                             </td>
@@ -381,12 +447,22 @@ export default function AdminDashboard() {
                                 {req.status || "قيد المراجعة"}
                               </span>
                             </td>
-                            <td className="px-6 py-4 flex items-center justify-center gap-2">
-                              <button onClick={() => handleOpenDetails(req)} className="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 hover:bg-[#c29b57] hover:text-white flex items-center justify-center transition" title="عرض وتعديل التفاصيل">
-                                <Eye size={16} />
-                              </button>
-                            </td>
-                          </tr>
+                           <td className="px-6 py-4 flex items-center justify-center gap-2">
+                                  {req.whatsapp_number && (
+                                    <a 
+                                      href={`https://wa.me/${req.whatsapp_number.replace(/\D/g, '')}`} 
+                                      target="_blank" 
+                                      className="w-8 h-8 rounded-lg bg-green-50 text-green-600 hover:bg-green-500 hover:text-white flex items-center justify-center transition shadow-sm" 
+                                      title="مراسلة عبر واتساب"
+                                    >
+                                      <MessageCircle size={14} />
+                                    </a>
+                                  )}
+                                  <button onClick={() => handleOpenDetails(req)} className="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 hover:bg-[#c29b57] hover:text-white flex items-center justify-center transition shadow-sm" title="عرض وتعديل التفاصيل">
+                                    <Eye size={16} />
+                                  </button>
+                                </td>
+                              </tr>
                         ))}
                       </tbody>
                     </table>
@@ -451,7 +527,7 @@ export default function AdminDashboard() {
         </div>
       </main>
 
-      {/* 💡 النافذة المنبثقة للتفاصيل والتعديل */}
+      
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0f172a]/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-3xl rounded-[2rem] overflow-hidden shadow-2xl border border-slate-100 flex flex-col max-h-[90vh]">
@@ -464,7 +540,21 @@ export default function AdminDashboard() {
                 </div>
                 <div>
                   <h3 className="font-black text-sm md:text-base">{isAdding ? "إضافة ملف جديد" : isEditing ? "تعديل بيانات الطلب" : "تفاصيل طلب الزواج"}</h3>
-                  {!isAdding && <p className="text-[10px] text-slate-400" dir="ltr">#{selectedUser?.request_id}</p>}
+                  {!isAdding && (
+                    <div className="flex items-center gap-2">
+                      <p className="text-[10px] text-slate-400" dir="ltr">#{selectedUser?.request_id}</p>
+                      <button 
+                        onClick={() => {
+                          navigator.clipboard.writeText(selectedUser?.request_id || '');
+                          alert('تم نسخ رقم الملف بنجاح!');
+                        }} 
+                        className="text-slate-400 hover:text-[#c29b57] transition"
+                        title="نسخ رقم الملف"
+                      >
+                        <Copy size={12} />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-2">
