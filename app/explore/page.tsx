@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
 import Link from "next/link";
 import { Search, MapPin, Filter, ChevronDown, Loader2, AlertCircle, User, Bell, Menu, ShieldCheck, Heart, Target, SlidersHorizontal } from "lucide-react";
 import { databases } from "@/lib/appwrite";
@@ -21,7 +21,7 @@ const saudiCities = [
   "جازان", "نجران", "حائل", "عرعر", "سكاكا", "الباحة", "الخفجي", "ينبع"
 ];
 
-export default function ExplorePage() {
+function ExplorePage() {
   const searchParams = useSearchParams();
   const genderQuery = searchParams.get('gender');
   const [activeTab, setActiveTab] = useState(genderQuery === 'male' ? 'men' : 'women');
@@ -301,5 +301,13 @@ const matchesMarriageType = !filterMarriageType ||
 
       </div>
     </main>
+  );
+}
+
+export default function ExplorePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-[#c29b57] font-bold">جاري تحميل الطلبات...</div>}>
+      <ExploreContent />
+    </Suspense>
   );
 }
