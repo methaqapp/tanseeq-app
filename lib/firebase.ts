@@ -1,5 +1,6 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "firebase/app-check";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -16,5 +17,12 @@ const auth = getAuth(app);
 
 // تهيئة اللغة لتكون عربية لرسائل الـ SMS
 auth.languageCode = 'ar';
+
+if (typeof window !== "undefined") {
+  initializeAppCheck(app, {
+    provider: new ReCaptchaEnterpriseProvider("6LdkKj8tAAAAAK8TXEqfneZkXkQW2pqULdQNG72l"),
+    isTokenAutoRefreshEnabled: true // تحديث التوكن تلقائياً لضمان عدم انقطاع الجلسة
+  });
+}
 
 export { app, auth };
