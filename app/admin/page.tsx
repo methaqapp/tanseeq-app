@@ -685,7 +685,7 @@ export default function AdminDashboard() {
                   <div><label className="block text-xs font-bold mb-1">المواصفات المطلوبة</label><textarea name="requirements" value={editFormData.requirements || ""} onChange={handleEditChange} rows={2} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm outline-none focus:border-[#c29b57] resize-none" /></div>
                   <div><label className="block text-xs font-bold mb-1">تفضيلات إضافية (ملاحظات)</label><textarea name="notes" value={editFormData.notes || ""} onChange={handleEditChange} rows={2} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm outline-none focus:border-[#c29b57] resize-none" /></div>
 
-                  <div className="pt-4 flex justify-end gap-2 border-t border-slate-200">
+                  <div className="pt-4 pb-28 md:pb-0 flex justify-end gap-2 border-t border-slate-200">
                     <button onClick={() => {setIsEditing(false); setIsAdding(false); setIsModalOpen(false);}} className="px-6 py-2.5 bg-slate-200 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-300 transition">إلغاء</button>
                     <button onClick={saveEdits} disabled={actionLoading === 'saving_edits'} className="px-6 py-2.5 bg-[#0f172a] text-white text-xs font-bold rounded-xl hover:bg-[#16213b] transition flex items-center gap-2">
                       {actionLoading === 'saving_edits' ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save size={14} /> حفظ البيانات</>}
@@ -697,7 +697,7 @@ export default function AdminDashboard() {
 
             {/* الفوتر (أزرار القبول والرفض تظهر فقط في وضع العرض) */}
             {!isEditing && selectedUser && (
-              <div className="p-4 border-t border-slate-100 bg-slate-50 flex gap-2 shrink-0">
+              <div className="p-4 pb-28 md:pb- border-t border-slate-100 bg-slate-50 flex gap-2 shrink-0">
                 {actionLoading === selectedUser.$id ? (
                   <div className="w-full flex justify-center py-2"><Loader2 className="w-6 h-6 text-[#c29b57] animate-spin" /></div>
                 ) : (
