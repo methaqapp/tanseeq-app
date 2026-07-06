@@ -102,7 +102,7 @@ export default function TopHeader({
             </Link>
           </nav>
           <div className="mt-auto pt-6 border-t border-slate-100 space-y-4">
-            <a href="https://wa.me/966527585083" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm text-slate-500 hover:text-[#0f172a] transition">
+            <a href="https://wa.me/966565687511" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm text-slate-500 hover:text-[#0f172a] transition">
               <Phone size={16} /> الدعم الفني (واتساب)
             </a>
           </div>

@@ -140,7 +140,7 @@ export default function ServicesPage() {
               {/* إصلاح مسافة الزر ليتمدد بشكل صحيح */}
               <div className="mt-auto w-full">                  {service.available ? (
                     <a 
-                      href={`https://wa.me/966527585083?text=السلام عليكم، أود الاستفسار عن خدمة (${service.title}).`}
+                      href={`https://wa.me/966565687511?text=السلام عليكم، أود الاستفسار عن خدمة (${service.title}).`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="w-full py-2 md:py-2.5 rounded-full text-[11px] md:text-xs font-bold flex justify-center items-center gap-2 transition-all border border-[#c29b57] text-[#c29b57] hover:bg-[#c29b57] hover:text-white"
@@ -169,7 +169,7 @@ export default function ServicesPage() {
   </div>
   
   <a 
-    href="https://wa.me/966527585083" 
+    href="https://wa.me/966565687511" 
     target="_blank" 
     rel="noopener noreferrer" 
     className="w-full bg-transparent border border-[#c29b57] text-[#c29b57] py-2.5 rounded-full font-bold transition-colors flex items-center justify-center gap-3 hover:bg-[#c29b57]/10"

@@ -225,7 +225,7 @@ export default function HomePage() {
         <div className="grid grid-cols-2 gap-3 md:gap-4">
           {/* زر تثبيت التطبيق - تم تحويله إلى Button بدلاً من الرابط */}
           <InstallAppModal />          
-          <a href="https://wa.me/966527585083" target="_blank" rel="noopener noreferrer" className="bg-[#0f172a] rounded-xl md:rounded-[1.5rem] py-3.5 px-3 flex items-center justify-center gap-2 md:gap-4 shadow-sm hover:bg-[#16213b] transition">
+          <a href="https://wa.me/966565687511" target="_blank" rel="noopener noreferrer" className="bg-[#0f172a] rounded-xl md:rounded-[1.5rem] py-3.5 px-3 flex items-center justify-center gap-2 md:gap-4 shadow-sm hover:bg-[#16213b] transition">
              <div className="shrink-0 border-[1.5px] border-[#c29b57] rounded-full p-1.5 flex items-center justify-center text-[#c29b57]">
                <MessageCircle size={16} className="md:w-5 md:h-5" strokeWidth={2} />
              </div>
@@ -269,7 +269,7 @@ export default function HomePage() {
             <Link href="/" onClick={closeMenu} className="flex items-center gap-3 text-sm text-slate-500 hover:text-[#0f172a] transition">
               <Info size={16} /> عن المنصة
             </Link>
-            <a href="https://wa.me/966527585083" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm text-slate-500 hover:text-[#0f172a] transition">
+            <a href="https://wa.me/966565687511" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm text-slate-500 hover:text-[#0f172a] transition">
               <Phone size={16} /> الدعم الفني (واتساب)
             </a>
           </div>

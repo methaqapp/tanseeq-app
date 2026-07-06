@@ -210,7 +210,7 @@ export default function RequestDetailsPage() {
         {/* 6. الأزرار السفلية */}
         <div className="flex flex-col gap-3">
           <a 
-            href={`https://wa.me/966527585083?text=السلام عليكم، مهتم بفتح تواصل بخصوص الطلب رقم ${displayId} وأرغب بمعرفة التفاصيل.`}
+            href={`https://wa.me/966565687511?text=السلام عليكم، مهتم بفتح تواصل بخصوص الطلب رقم ${displayId} وأرغب بمعرفة التفاصيل.`}
             target="_blank" 
             rel="noopener noreferrer"
             className="w-full bg-[#0f172a] text-white py-4 rounded-2xl font-bold hover:bg-[#16213b] transition flex items-center justify-center gap-2 text-sm"
