@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { auth } from "@/lib/firebase";
 import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
+import Image from "next/image";
 
 const gulfCountries = {
   "السعودية": ["الرياض", "جدة", "مكة المكرمة", "المدينة المنورة", "الدمام", "الخبر", "الظهران", "الطائف", "القصيم", "أبها", "خميس مشيط", "تبوك", "حائل", "جازان", "نجران", "الباحة", "الجبيل", "الأحساء", "ينبع"],
@@ -67,6 +68,10 @@ function RegisterContent() {
       localStorage.setItem("mithaq_form_data", JSON.stringify(formData));
       localStorage.setItem("mithaq_form_type", formType);
       localStorage.setItem("mithaq_form_step", step.toString());
+    } else {
+      // تنظيف الذاكرة فوراً عند الضغط على زر الرجوع
+      localStorage.removeItem("mithaq_form_type");
+      localStorage.removeItem("mithaq_form_step");
     }
   }, [formData, formType, step]);
 
@@ -211,25 +216,41 @@ function RegisterContent() {
         <div className="max-w-4xl w-full text-center mt-10">
           <h2 className="text-2xl md:text-3xl font-bold text-[#0f172a] mb-10">الرجاء اختيار نوع التسجيل للبدء</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
-            <button onClick={() => setFormType("women")} className="bg-white rounded-[2rem] p-8 border border-[#e2e8f0] shadow-sm hover:shadow-xl transition-all flex flex-col items-center group">
-              <div className="w-28 h-28 bg-[#c29b57] rounded-full flex items-center justify-center mb-8"><span className="material-symbols-outlined text-white text-5xl">face_3</span></div>
+            {/* 💡 بطاقة النساء المحدثة بالصورة */}
+            <button onClick={() => setFormType("women")} className="bg-white rounded-[2rem] p-8 border border-[#e2e8f0] shadow-sm hover:shadow-xl hover:border-[#c29b57] transition-all flex flex-col items-center group">
+              <div className="w-32 h-32 rounded-full flex items-center justify-center mb-6 overflow-hidden relative border-4 border-slate-50 group-hover:scale-105 transition-transform duration-300">
+                 <Image src="/women-card-bg.png" alt="تسجيل النساء" fill sizes="(max-width: 768px) 100vw, 33vw" priority className="object-cover" />
+              </div>
               <h3 className="text-2xl font-bold text-[#0f172a] mb-2">تسجيل النساء</h3>
-              <div className="bg-[#0f172a] text-white w-full py-4 rounded-xl font-bold mt-4">ابدأ الآن</div>
+              <div className="bg-[#0f172a] text-white w-full py-4 rounded-xl font-bold mt-4 transition-colors group-hover:bg-[#c29b57]">ابدأ الآن</div>
             </button>
-            <button onClick={() => setFormType("men")} className="bg-white rounded-[2rem] p-8 border border-[#e2e8f0] shadow-sm hover:shadow-xl transition-all flex flex-col items-center group">
-              <div className="w-28 h-28 bg-[#0f172a] rounded-full flex items-center justify-center mb-8"><span className="material-symbols-outlined text-[#c29b57] text-5xl">person</span></div>
+            {/* 💡 بطاقة الرجال المحدثة بالصورة */}
+            <button onClick={() => setFormType("men")} className="bg-white rounded-[2rem] p-8 border border-[#e2e8f0] shadow-sm hover:shadow-xl hover:border-[#c29b57] transition-all flex flex-col items-center group">
+              <div className="w-32 h-32 rounded-full flex items-center justify-center mb-6 overflow-hidden relative border-4 border-slate-50 group-hover:scale-105 transition-transform duration-300">
+                 <Image src="/men-card-bg.png" alt="تسجيل الرجال" fill sizes="(max-width: 768px) 100vw, 33vw" priority className="object-cover" />
+              </div>
               <h3 className="text-2xl font-bold text-[#0f172a] mb-2">تسجيل الرجال</h3>
-              <div className="bg-[#c29b57] text-white w-full py-4 rounded-xl font-bold mt-4">ابدأ الآن</div>
+              <div className="bg-[#c29b57] text-white w-full py-4 rounded-xl font-bold mt-4 transition-colors group-hover:bg-[#0f172a]">ابدأ الآن</div>
             </button>
           </div>
-        </div>
-      ) : (
+        </div>      ) : (
         <div className="w-full max-w-2xl bg-white rounded-[2rem] shadow-sm border border-[#e2e8f0] overflow-hidden">
           <div className="px-6 pt-8 pb-4 border-b border-[#f5f3f3] relative">
-            <Link href="/" className="absolute top-8 right-6 text-slate-400 hover:text-[#0f172a] transition">
-              <ChevronRight className="w-6 h-6" />
-            </Link>
-            <h2 className="text-center text-lg font-bold text-[#0f172a] mb-6">التسجيل</h2>
+           {/* زر التراجع المطور */}
+<button 
+  type="button" 
+  onClick={() => {
+    if (step === 1) {
+                        setFormType(null); // يرجع لشاشة اختيار الجنس
+                        localStorage.removeItem("mithaq_form_type"); // تنظيف الذاكرة
+                        localStorage.removeItem("mithaq_form_step");
+                      } else {
+                        prevStep(); // يرجع للخطوة السابقة في الاستمارة
+                      }  }} 
+  className="absolute top-8 right-6 text-slate-400 hover:text-rose-600 transition cursor-pointer z-10"
+>
+  <ChevronRight className="w-6 h-6" />
+</button>            <h2 className="text-center text-lg font-bold text-[#0f172a] mb-6">التسجيل</h2>
             
             <div className="flex items-center justify-center max-w-sm mx-auto relative">
               <div className="absolute top-1/2 left-0 right-0 h-[2px] bg-[#f5f3f3] -z-10 transform -translate-y-1/2"></div>
@@ -469,16 +490,29 @@ function RegisterContent() {
 
                 {/* أزرار التنقل */}
                 <div className="flex gap-4 pt-6 mt-4">
-                  {step > 1 && (
-                    <button type="button" onClick={prevStep} className="px-6 py-4 rounded-xl font-bold text-[#0f172a] border border-[#e2e8f0] bg-white hover:bg-[#f8fafc] transition">
-                      السابق
-                    </button>
-                  )}
+                  
+                  {/* زر "السابق" الذكي (بدون شرط الإخفاء) */}
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      if (step === 1) {
+                        setFormType(null); // يرجع لشاشة اختيار الجنس
+                        localStorage.removeItem("mithaq_form_type"); // تنظيف الذاكرة
+                        localStorage.removeItem("mithaq_form_step");
+                      } else {
+                        prevStep(); // يرجع للخطوة السابقة في الاستمارة
+                      }
+                    }} 
+                    className="px-6 py-4 rounded-xl font-bold text-[#0f172a] border border-[#e2e8f0] bg-white hover:bg-[#f8fafc] transition shadow-sm"
+                  >
+                    السابق
+                  </button>
+
                   <button type="submit" disabled={loading} className="flex-1 py-4 rounded-xl font-bold text-white bg-[#0f172a] hover:bg-[#1a3026] transition shadow-md flex justify-center items-center gap-2">
                     {loading ? "جاري المعالجة..." : (step === 4 ? "إرسال رمز التحقق" : "التالي")}
                   </button>
-                </div>
-              </form>
+                  
+                </div>              </form>
             ) : (
               // شاشة التحقق OTP (لم يتم تغييرها)
               <form onSubmit={handleFinalSubmit} className="space-y-6 animate-in zoom-in-95 duration-300 text-center">

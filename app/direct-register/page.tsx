@@ -400,11 +400,23 @@ function DirectRegisterContent() {
               )}
 
               <div className="flex gap-4 pt-6 border-t border-[#e2e8f0] mt-8">
-                {step > 1 && (
-                  <button type="button" onClick={prevStep} className="px-6 py-4 rounded-xl font-bold text-[#0f172a] border border-[#e2e8f0] bg-white hover:bg-[#f8fafc] transition shadow-sm">
-                    السابق
-                  </button>
-                )}
+                  {/* أزرار التنقل السفلية المصححة */}
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    if (step === 1) {
+                      setFormType(null); 
+                      localStorage.removeItem("mithaq_form_type"); 
+                      localStorage.removeItem("mithaq_form_step");
+                    } else {
+                      prevStep(); 
+                    }
+                  }} 
+                  className="px-6 py-4 rounded-xl font-bold text-[#0f172a] border border-[#e2e8f0] bg-white hover:bg-[#f8fafc] transition shadow-sm"
+                >
+                  السابق
+                </button>
+
                 <button type="submit" disabled={loading} className="flex-1 py-4 rounded-xl font-bold text-white bg-[#0f172a] hover:bg-[#1a3026] transition shadow-md flex justify-center items-center gap-2">
                   {loading ? "جاري الإرسال..." : (step === 3 ? "تقديم الطلب" : "التالي")}
                 </button>
